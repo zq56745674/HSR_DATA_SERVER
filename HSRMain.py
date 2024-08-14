@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIntValidator
 from HSRMain_ui import Ui_MainWindow
 import requests
 import pandas as pd
@@ -29,9 +29,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 设置窗口接受拖拽事件
         self.setAcceptDrops(True)
         self.get_max_uid(self.db)
+        self.set_int_validator()
         self.bind()
         
     def bind(self):
+        # 菜单栏
+        self.actionLogin.triggered.connect(self.show_login)
+        self.actionExit.triggered.connect(self.close)
+        # 按钮
         self.fileButton.clicked.connect(self.upload_file)
         self.fileExeButton.clicked.connect(self.execute_file)
         self.randomUidButton.clicked.connect(self.random_uid)
@@ -48,6 +53,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ]
         for radio_button in radio_buttons:
             radio_button.clicked.connect(self.radio_button_clicked)
+
+    def show_login(self):
+        from Login import MyWindow
+        self.login_window = MyWindow()
+        self.login_window.show()
+        self.close()
         
     def radio_button_clicked(self):
         sender = self.sender()
@@ -199,6 +210,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             logging.info("数据库连接已关闭")
         event.accept()
     
+    def set_int_validator(self):
+        line_edits = [
+            self.minUidEdit_cn, self.maxUidEdit_cn,
+            self.minUidEdit_b, self.maxUidEdit_b,
+            self.minUidEdit_ya, self.maxUidEdit_ya,
+            self.minUidEdit_ou, self.maxUidEdit_ou,
+            self.minUidEdit_mei, self.maxUidEdit_mei,
+            self.minUidEdit_gat, self.maxUidEdit_gat,
+            self.maxLenLineEdit,
+        ]
+        for line_edit in line_edits:
+            line_edit.setValidator(QIntValidator(0, 999999999, line_edit))
+    
     def set_buttons_enabled(self, enabled):
         # 按钮列表
         buttons = [
@@ -224,6 +248,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 设置 QLineEdit 的启用状态
         for line_edit in line_edits:
             line_edit.setEnabled(enabled)
+
 
 class ExecuteFileThread(QThread):
     progress = Signal(int)

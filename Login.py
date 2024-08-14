@@ -1,10 +1,8 @@
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 from PySide6.QtGui import QIcon
 from Login_ui import Ui_Form
-from HSRMain import MainWindow
 import pymysql
 import logging
-import traceback
 
 # 设置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -54,6 +52,7 @@ class MyWindow(QWidget, Ui_Form):
                 return
         # 进入 Ui_HSRMainWindow
         self.hide()
+        from HSRMain import MainWindow  # 延迟导入
         self.main_window = MainWindow(self.db)
         self.main_window.show()
     
