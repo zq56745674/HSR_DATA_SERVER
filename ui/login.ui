@@ -45,7 +45,7 @@
            <item>
             <widget class="QLineEdit" name="lineEdit">
              <property name="text">
-              <string>localhost</string>
+              <string>rm-uf6n58p87aw72940u3o.mysql.rds.aliyuncs.com</string>
              </property>
              <property name="placeholderText">
               <string>请输入数据库host</string>
@@ -79,7 +79,7 @@
            <item>
             <widget class="QLineEdit" name="lineEdit_2">
              <property name="text">
-              <string>root</string>
+              <string>zzm</string>
              </property>
              <property name="placeholderText">
               <string>请输入数据库用户名</string>
@@ -113,7 +113,7 @@
            <item>
             <widget class="QLineEdit" name="lineEdit_3">
              <property name="text">
-              <string>root</string>
+              <string>Zq56745674</string>
              </property>
              <property name="echoMode">
               <enum>QLineEdit::Password</enum>
@@ -150,7 +150,7 @@
            <item>
             <widget class="QLineEdit" name="lineEdit_4">
              <property name="text">
-              <string>exam</string>
+              <string>my_data</string>
              </property>
              <property name="placeholderText">
               <string>请输入数据库名称</string>
