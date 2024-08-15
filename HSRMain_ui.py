@@ -26,11 +26,15 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(682, 540)
+        MainWindow.resize(682, 545)
         self.actionLogin = QAction(MainWindow)
         self.actionLogin.setObjectName(u"actionLogin")
         self.actionExit = QAction(MainWindow)
         self.actionExit.setObjectName(u"actionExit")
+        self.actionDark = QAction(MainWindow)
+        self.actionDark.setObjectName(u"actionDark")
+        self.actionLight = QAction(MainWindow)
+        self.actionLight.setObjectName(u"actionLight")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -380,9 +384,11 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 682, 23))
+        self.menubar.setGeometry(QRect(0, 0, 682, 26))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
+        self.menuToggle = QMenu(self.menu)
+        self.menuToggle.setObjectName(u"menuToggle")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -392,7 +398,11 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu.menuAction())
         self.menu.addAction(self.actionLogin)
         self.menu.addSeparator()
+        self.menu.addAction(self.menuToggle.menuAction())
+        self.menu.addSeparator()
         self.menu.addAction(self.actionExit)
+        self.menuToggle.addAction(self.actionDark)
+        self.menuToggle.addAction(self.actionLight)
 
         self.retranslateUi(MainWindow)
 
@@ -403,6 +413,8 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"HSR\u6570\u636e\u722c\u53d6", None))
         self.actionLogin.setText(QCoreApplication.translate("MainWindow", u"Login", None))
         self.actionExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
+        self.actionDark.setText(QCoreApplication.translate("MainWindow", u"Dark", None))
+        self.actionLight.setText(QCoreApplication.translate("MainWindow", u"Light", None))
         self.fileButton.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4f20\u6587\u4ef6", None))
         self.fileLabel.setText(QCoreApplication.translate("MainWindow", u"\u672a\u9009\u62e9\u6587\u4ef6", None))
         self.maxUidLabel.setText(QCoreApplication.translate("MainWindow", u"\u6700\u5927uid\uff1a", None))
@@ -457,5 +469,6 @@ class Ui_MainWindow(object):
         self.interruptButton.setText(QCoreApplication.translate("MainWindow", u"\u4e2d\u65ad", None))
         self.continueButton.setText(QCoreApplication.translate("MainWindow", u"\u7ee7\u7eed", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u83dc\u5355", None))
+        self.menuToggle.setTitle(QCoreApplication.translate("MainWindow", u"Toggle", None))
     # retranslateUi
 

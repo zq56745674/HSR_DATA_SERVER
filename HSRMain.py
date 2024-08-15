@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ]
         for radio_button in radio_buttons:
             radio_button.clicked.connect(self.radio_button_clicked)
-
+    
     def show_login(self):
         from Login import MyWindow
         self.login_window = MyWindow()

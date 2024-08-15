@@ -62,9 +62,15 @@ class MyWindow(QWidget, Ui_Form):
             logging.error("数据库连接已关闭")
         event.accept()
 
+@staticmethod
+def read_qss_file(qss_file_name):
+    with open(qss_file_name, 'r',  encoding='UTF-8') as file:
+        return file.read()
+
 if __name__ == "__main__":
     app = QApplication()
-    app.setWindowIcon(QIcon('icon\HSR_HH.ico')) 
+    app.setWindowIcon(QIcon('icon\HSR_HH.ico'))
+    app.setStyleSheet(read_qss_file('qss\\Ubuntu.qss'))
     stats = MyWindow()
     stats.show()
     app.exec()
