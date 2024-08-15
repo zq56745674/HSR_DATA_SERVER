@@ -17,6 +17,9 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QWidget" name="widget" native="true">
+      <property name="contextMenuPolicy">
+       <enum>Qt::DefaultContextMenu</enum>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,1,2">
@@ -559,7 +562,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>682</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -568,10 +571,12 @@ p, li { white-space: pre-wrap; }
     </property>
     <widget class="QMenu" name="menuToggle">
      <property name="title">
-      <string>Toggle</string>
+      <string>Theme</string>
      </property>
-     <addaction name="actionDark"/>
-     <addaction name="actionLight"/>
+     <addaction name="actionAqua"/>
+     <addaction name="actionMacOS"/>
+     <addaction name="actionNeonButtons"/>
+     <addaction name="actionUbuntu"/>
     </widget>
     <addaction name="actionLogin"/>
     <addaction name="separator"/>
@@ -596,14 +601,24 @@ p, li { white-space: pre-wrap; }
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionDark">
+  <action name="actionAqua">
    <property name="text">
-    <string>Dark</string>
+    <string>Aqua</string>
    </property>
   </action>
-  <action name="actionLight">
+  <action name="actionMacOS">
    <property name="text">
-    <string>Light</string>
+    <string>MacOS</string>
+   </property>
+  </action>
+  <action name="actionNeonButtons">
+   <property name="text">
+    <string>NeonButtons</string>
+   </property>
+  </action>
+  <action name="actionUbuntu">
+   <property name="text">
+    <string>Ubuntu</string>
    </property>
   </action>
  </widget>
