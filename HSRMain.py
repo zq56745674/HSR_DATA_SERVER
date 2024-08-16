@@ -2,6 +2,9 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIntValidator
 from HSRMain_ui import Ui_MainWindow
+import qdarkstyle
+from qdarkstyle.light.palette import LightPalette
+from qdarkstyle.dark.palette import DarkPalette
 import requests
 import pandas as pd
 import random
@@ -25,6 +28,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_index = 0
         self.min_uid = 0
         self.max_uid = 0
+        self.theme = 'light'
 
         # 设置窗口接受拖拽事件
         self.setAcceptDrops(True)
@@ -36,6 +40,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # 菜单栏
         self.actionLogin.triggered.connect(self.show_login)
         self.actionExit.triggered.connect(self.close)
+        self.actionAqua.triggered.connect(lambda: self.toggle_theme('Aqua'))
+        self.actionMacOS.triggered.connect(lambda: self.toggle_theme('MacOS'))
+        self.actionNeonButtons.triggered.connect(lambda: self.toggle_theme('NeonButtons'))
+        self.actionUbuntu.triggered.connect(lambda: self.toggle_theme('Ubuntu'))
         # 按钮
         self.fileButton.clicked.connect(self.upload_file)
         self.fileExeButton.clicked.connect(self.execute_file)
@@ -53,6 +61,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ]
         for radio_button in radio_buttons:
             radio_button.clicked.connect(self.radio_button_clicked)
+
+    def toggle_theme(self, theme):
+        self.setStyleSheet(self.read_qss_file(f'qss\\{theme}.qss'))
     
     def show_login(self):
         from Login import MyWindow
@@ -136,6 +147,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         logging.info("文件处理完成")
         self.set_buttons_enabled(True)
         QMessageBox.information(self, "完成", "文件处理完成")
+    
+    def read_qss_file(self, qss_file_name):
+        with open(qss_file_name, 'r',  encoding='UTF-8') as file:
+            return file.read()
     
     def show_error_message(self, message, index=None):
         if index is not None:
