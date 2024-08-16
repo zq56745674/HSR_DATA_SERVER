@@ -19,14 +19,14 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QLabel,
     QLineEdit, QMainWindow, QMenu, QMenuBar,
     QProgressBar, QPushButton, QRadioButton, QSizePolicy,
-    QSpacerItem, QStatusBar, QTextBrowser, QVBoxLayout,
-    QWidget)
+    QSpacerItem, QStatusBar, QTabWidget, QTextBrowser,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(682, 545)
+        MainWindow.resize(841, 706)
         self.actionLogin = QAction(MainWindow)
         self.actionLogin.setObjectName(u"actionLogin")
         self.actionExit = QAction(MainWindow)
@@ -48,17 +48,23 @@ class Ui_MainWindow(object):
         self.widget.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.verticalLayout_3 = QVBoxLayout(self.widget)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.tabWidget = QTabWidget(self.widget)
+        self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidgetPage1 = QWidget()
+        self.tabWidgetPage1.setObjectName(u"tabWidgetPage1")
+        self.verticalLayout_4 = QVBoxLayout(self.tabWidgetPage1)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.fileButton = QPushButton(self.widget)
+        self.fileButton = QPushButton(self.tabWidgetPage1)
         self.fileButton.setObjectName(u"fileButton")
         self.fileButton.setMinimumSize(QSize(0, 30))
 
         self.horizontalLayout.addWidget(self.fileButton)
 
-        self.fileLabel = QLabel(self.widget)
+        self.fileLabel = QLabel(self.tabWidgetPage1)
         self.fileLabel.setObjectName(u"fileLabel")
 
         self.horizontalLayout.addWidget(self.fileLabel)
@@ -72,7 +78,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer)
 
-        self.maxUidLabel = QLabel(self.widget)
+        self.maxUidLabel = QLabel(self.tabWidgetPage1)
         self.maxUidLabel.setObjectName(u"maxUidLabel")
         self.maxUidLabel.setTextInteractionFlags(Qt.LinksAccessibleByMouse|Qt.TextSelectableByMouse)
 
@@ -82,9 +88,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.setStretch(1, 1)
         self.horizontalLayout_8.setStretch(2, 2)
 
-        self.verticalLayout_3.addLayout(self.horizontalLayout_8)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_8)
 
-        self.groupBox = QGroupBox(self.widget)
+        self.groupBox = QGroupBox(self.tabWidgetPage1)
         self.groupBox.setObjectName(u"groupBox")
         self.horizontalLayout_9 = QHBoxLayout(self.groupBox)
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
@@ -287,20 +293,20 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_9.setStretch(0, 3)
 
-        self.verticalLayout_3.addWidget(self.groupBox)
+        self.verticalLayout_4.addWidget(self.groupBox)
 
-        self.infoBrowser = QTextBrowser(self.widget)
+        self.infoBrowser = QTextBrowser(self.tabWidgetPage1)
         self.infoBrowser.setObjectName(u"infoBrowser")
         font = QFont()
         font.setFamilies([u"Arial"])
         font.setPointSize(11)
         self.infoBrowser.setFont(font)
 
-        self.verticalLayout_3.addWidget(self.infoBrowser)
+        self.verticalLayout_4.addWidget(self.infoBrowser)
 
         self.horizontalLayout_11 = QHBoxLayout()
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
-        self.progressBar = QProgressBar(self.widget)
+        self.progressBar = QProgressBar(self.tabWidgetPage1)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setMinimumSize(QSize(0, 0))
         self.progressBar.setStyleSheet(u"QProgressBar {\n"
@@ -317,7 +323,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_11.addWidget(self.progressBar)
 
-        self.progressLabel = QLabel(self.widget)
+        self.progressLabel = QLabel(self.tabWidgetPage1)
         self.progressLabel.setObjectName(u"progressLabel")
         self.progressLabel.setAlignment(Qt.AlignCenter)
         self.progressLabel.setWordWrap(False)
@@ -325,7 +331,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_11.addWidget(self.progressLabel)
 
-        self.timeLabel = QLabel(self.widget)
+        self.timeLabel = QLabel(self.tabWidgetPage1)
         self.timeLabel.setObjectName(u"timeLabel")
         self.timeLabel.setAlignment(Qt.AlignCenter)
 
@@ -335,11 +341,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11.setStretch(1, 1)
         self.horizontalLayout_11.setStretch(2, 1)
 
-        self.verticalLayout_3.addLayout(self.horizontalLayout_11)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_11)
 
         self.horizontalLayout_12 = QHBoxLayout()
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.fileExeButton = QPushButton(self.widget)
+        self.fileExeButton = QPushButton(self.tabWidgetPage1)
         self.fileExeButton.setObjectName(u"fileExeButton")
         self.fileExeButton.setMinimumSize(QSize(0, 30))
 
@@ -347,13 +353,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_10 = QHBoxLayout()
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.randomUidButton = QPushButton(self.widget)
+        self.randomUidButton = QPushButton(self.tabWidgetPage1)
         self.randomUidButton.setObjectName(u"randomUidButton")
         self.randomUidButton.setMinimumSize(QSize(0, 30))
 
         self.horizontalLayout_10.addWidget(self.randomUidButton)
 
-        self.maxLenLineEdit = QLineEdit(self.widget)
+        self.maxLenLineEdit = QLineEdit(self.tabWidgetPage1)
         self.maxLenLineEdit.setObjectName(u"maxLenLineEdit")
         self.maxLenLineEdit.setMinimumSize(QSize(0, 25))
 
@@ -364,13 +370,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addLayout(self.horizontalLayout_10)
 
-        self.interruptButton = QPushButton(self.widget)
+        self.interruptButton = QPushButton(self.tabWidgetPage1)
         self.interruptButton.setObjectName(u"interruptButton")
         self.interruptButton.setMinimumSize(QSize(0, 30))
 
         self.horizontalLayout_12.addWidget(self.interruptButton)
 
-        self.continueButton = QPushButton(self.widget)
+        self.continueButton = QPushButton(self.tabWidgetPage1)
         self.continueButton.setObjectName(u"continueButton")
         self.continueButton.setMinimumSize(QSize(0, 30))
 
@@ -381,7 +387,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_12.setStretch(2, 1)
         self.horizontalLayout_12.setStretch(3, 1)
 
-        self.verticalLayout_3.addLayout(self.horizontalLayout_12)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_12)
+
+        self.tabWidget.addTab(self.tabWidgetPage1, "")
+        self.tabWidgetPage2 = QWidget()
+        self.tabWidgetPage2.setObjectName(u"tabWidgetPage2")
+        self.tabWidget.addTab(self.tabWidgetPage2, "")
+
+        self.verticalLayout_3.addWidget(self.tabWidget)
 
 
         self.verticalLayout.addWidget(self.widget)
@@ -389,7 +402,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 682, 23))
+        self.menubar.setGeometry(QRect(0, 0, 841, 26))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menuToggle = QMenu(self.menu)
@@ -412,6 +425,9 @@ class Ui_MainWindow(object):
         self.menuToggle.addAction(self.actionUbuntu)
 
         self.retranslateUi(MainWindow)
+
+        self.tabWidget.setCurrentIndex(0)
+
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
@@ -477,6 +493,8 @@ class Ui_MainWindow(object):
         self.maxLenLineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"\u8bf7\u8f93\u5165...", None))
         self.interruptButton.setText(QCoreApplication.translate("MainWindow", u"\u4e2d\u65ad", None))
         self.continueButton.setText(QCoreApplication.translate("MainWindow", u"\u7ee7\u7eed", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage1), QCoreApplication.translate("MainWindow", u"HSR\u6570\u636e\u722c\u53d6", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage2), QCoreApplication.translate("MainWindow", u"\u5176\u4ed6", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u83dc\u5355", None))
         self.menuToggle.setTitle(QCoreApplication.translate("MainWindow", u"Theme", None))
     # retranslateUi

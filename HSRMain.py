@@ -2,9 +2,6 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIntValidator
 from HSRMain_ui import Ui_MainWindow
-import qdarkstyle
-from qdarkstyle.light.palette import LightPalette
-from qdarkstyle.dark.palette import DarkPalette
 import requests
 import pandas as pd
 import random
