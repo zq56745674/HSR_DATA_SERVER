@@ -60,7 +60,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             radio_button.clicked.connect(self.radio_button_clicked)
 
     def toggle_theme(self, theme):
-        self.setStyleSheet(self.read_qss_file(f'qss\\{theme}.qss'))
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        qss_file_path = os.path.join(current_dir, 'qss', f'{theme}.qss')
+        self.setStyleSheet(self.read_qss_file(qss_file_path))
     
     def show_login(self):
         from Login import MyWindow

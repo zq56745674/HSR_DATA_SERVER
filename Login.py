@@ -3,6 +3,7 @@ from PySide6.QtGui import QIcon
 from Login_ui import Ui_Form
 import pymysql
 import logging
+import os
 
 # 设置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -69,8 +70,11 @@ def read_qss_file(qss_file_name):
 
 if __name__ == "__main__":
     app = QApplication()
-    app.setWindowIcon(QIcon('icon\HSR_HH.ico'))
-    app.setStyleSheet(read_qss_file('qss\\Ubuntu.qss'))
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    icon_path = os.path.join(current_dir, 'icon', 'HSR_HH.ico')
+    app.setWindowIcon(QIcon(icon_path))
+    qss_file_path = os.path.join(current_dir, 'qss', 'Ubuntu.qss')
+    app.setStyleSheet(read_qss_file(qss_file_path))
     stats = MyWindow()
     stats.show()
     app.exec()
