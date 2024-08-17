@@ -37,30 +37,46 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
     def bind(self):
         # 菜单栏
-        self.actionLogin.triggered.connect(self.show_login)
-        self.actionExit.triggered.connect(self.close)
-        self.actionAqua.triggered.connect(lambda: self.toggle_theme('Aqua'))
-        self.actionMacOS.triggered.connect(lambda: self.toggle_theme('MacOS'))
-        self.actionNeonButtons.triggered.connect(lambda: self.toggle_theme('NeonButtons'))
-        self.actionUbuntu.triggered.connect(lambda: self.toggle_theme('Ubuntu'))
+        self.bind_actions([
+            (self.actionLogin, self.show_login),
+            (self.actionExit, self.close),
+            (self.actionAqua, lambda: self.toggle_theme('Aqua')),
+            (self.actionMacOS, lambda: self.toggle_theme('MacOS')),
+            (self.actionNeonButtons, lambda: self.toggle_theme('NeonButtons')),
+            (self.actionUbuntu, lambda: self.toggle_theme('Ubuntu'))
+        ])
         # tab1按钮
-        self.fileButton.clicked.connect(lambda: self.upload_file(1))
-        self.fileExeButton.clicked.connect(self.execute_file)
-        self.randomUidButton.clicked.connect(self.random_uid)
-        self.interruptButton.clicked.connect(self.interrupt_func)
-        self.continueButton.clicked.connect(self.continue_func)
+        self.bind_buttons([
+            (self.fileButton, lambda: self.upload_file(1)),
+            (self.fileExeButton, self.execute_file),
+            (self.randomUidButton, self.random_uid),
+            (self.interruptButton, self.interrupt_func),
+            (self.continueButton, self.continue_func)
+        ])
         # tab2按钮
-        self.fileButton_2.clicked.connect(lambda: self.upload_file(2))
-        self.fileZZZExeButton.clicked.connect(self.execute_zzz_file)
-
-        radio_buttons = [
+        self.bind_buttons([
+            (self.fileButton_2, lambda: self.upload_file(2)),
+            (self.fileZZZExeButton, self.execute_zzz_file)
+        ])
+        # 单选按钮
+        self.bind_radio_buttons([
             self.radioButton_cn,
             self.radioButton_b,
             self.radioButton_ya,
             self.radioButton_ou,
             self.radioButton_mei,
             self.radioButton_gat
-        ]
+        ])
+
+    def bind_actions(self, actions):
+        for action, method in actions:
+            action.triggered.connect(method)
+
+    def bind_buttons(self, buttons):
+        for button, method in buttons:
+            button.clicked.connect(method)
+
+    def bind_radio_buttons(self, radio_buttons):
         for radio_button in radio_buttons:
             radio_button.clicked.connect(self.radio_button_clicked)
 
@@ -168,16 +184,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         with open(qss_file_name, 'r',  encoding='UTF-8') as file:
             return file.read()
     
+    def show_message(self, message, title="信息", icon=QMessageBox.Information, buttons=QMessageBox.Ok):
+        msg_box = QMessageBox()
+        msg_box.setIcon(icon)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setStandardButtons(buttons)
+        msg_box.button(buttons).setText("确定")
+        msg_box.exec()
+
     def show_error_message(self, message, index=None):
         if index is not None:
             self.current_index = index
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Critical)
-        msg_box.setWindowTitle("错误")
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.button(QMessageBox.Ok).setText("确定")
-        msg_box.exec()
+        self.show_message(message, title="错误", icon=QMessageBox.Critical)
         self.set_buttons_enabled(True)
 
     def show_info_message(self, message):
