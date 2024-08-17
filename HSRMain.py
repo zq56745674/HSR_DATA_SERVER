@@ -9,7 +9,9 @@ import time
 import logging
 import pymysql
 import os
+from zipfile import BadZipFile
 from contextlib import contextmanager
+import ZZZDataExe
 
 # 设置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -41,12 +43,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionMacOS.triggered.connect(lambda: self.toggle_theme('MacOS'))
         self.actionNeonButtons.triggered.connect(lambda: self.toggle_theme('NeonButtons'))
         self.actionUbuntu.triggered.connect(lambda: self.toggle_theme('Ubuntu'))
-        # 按钮
-        self.fileButton.clicked.connect(self.upload_file)
+        # tab1按钮
+        self.fileButton.clicked.connect(lambda: self.upload_file(1))
         self.fileExeButton.clicked.connect(self.execute_file)
         self.randomUidButton.clicked.connect(self.random_uid)
         self.interruptButton.clicked.connect(self.interrupt_func)
         self.continueButton.clicked.connect(self.continue_func)
+        # tab2按钮
+        self.fileButton_2.clicked.connect(lambda: self.upload_file(2))
+        self.fileZZZExeButton.clicked.connect(self.execute_zzz_file)
 
         radio_buttons = [
             self.radioButton_cn,
@@ -103,6 +108,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     
     def execute_file(self):
         self.start_thread(apprType="1", file=self.fileLabel.text())
+
+    def execute_zzz_file(self):
+        file = self.fileLabel_2.text()
+        if file == "未选择文件":
+            self.show_error_message("未选择文件")
+            return
+        try:
+            ZZZDataExe.execute_zzz_file(file)
+            logging.info("文件处理完成")
+            QMessageBox.information(self, "完成", "文件处理完成")
+        except Exception as e:
+            self.show_error_message(str(e), 0)
 
     def random_uid(self):
         if self.serverName == "":
@@ -181,11 +198,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for label, value in zip(labels, result):
             getattr(self, f"label_{label}").setText(str(value[0]))
 
-    def upload_file(self):
+    def upload_file(self, tab):
         default_path = os.path.expanduser("~/Desktop")  # 使用 os.path.expanduser 获取桌面路径
         # 打开文件选择对话框，并限制文件后缀为 .xlsx, .xls 和 .csv
-        file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", default_path, "Excel 文件 (*.xlsx *.xls);;CSV 文件 (*.csv);;所有文件 (*)")
-        self.fileLabel.setText(file_path if file_path else "未选择文件")
+        file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", default_path, "表格文件 (*.xlsx *.xls *.csv);;所有文件 (*)")
+        if tab == 1:
+            self.fileLabel.setText(file_path if file_path else "未选择文件")
+        elif tab == 2:
+            self.fileLabel_2.setText(file_path if file_path else "未选择文件")
     
     @contextmanager
     def get_cursor(self, db):
@@ -408,9 +428,21 @@ class ExecuteFileThread(QThread):
     def execute_file(self):
         self.start_time = time.time()  # 记录开始时间
         try:
-            df = pd.read_excel(self.file)  # 替换为你的Excel文件路径
+            if self.file.endswith('.xlsx') or self.file.endswith('.xls'):
+                df = pd.read_excel(self.file, engine='openpyxl')  # 读取Excel文件
+            elif self.file.endswith('.csv'):
+                df = pd.read_csv(self.file, encoding='GBK')  # 读取CSV文件
+            else:
+                self.error_occurred.emit("不支持的文件格式", 0)
+                return
         except FileNotFoundError:
             self.error_occurred.emit("未选择文件", 0)
+            return
+        except ValueError as e:
+            self.error_occurred.emit(str(e), 0)
+            return
+        except BadZipFile:
+            self.error_occurred.emit("文件不是有效的Excel文件", 0)
             return
         
         first = df.iloc[0]
