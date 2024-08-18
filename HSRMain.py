@@ -359,7 +359,7 @@ class ExecuteFileThread(QThread):
                 logging.info(f"已达到循环次数限制，休息 {rest_time} 秒....................................")
                 self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................")
                 counter = 0  # 重置计数器
-                time.sleep(rest_time)  # 休息10秒
+                time.sleep(rest_time)  # 休息rest_time秒
                 
             randomNum = random.randint(self.minEditUid, max_uid) + min_uid
             uid = str(randomNum)

@@ -6,11 +6,14 @@ from zipfile import BadZipFile
 def match_last_login(text):
     if '在线' in text:
         return '在线'
-    pattern = re.compile(r"最后登录：(\d+天前)")
-    pattern1 = re.compile(r"最后登录：(今日内|今白内)")
+    pattern = re.compile(r"(\d+天前|\d+天)")
+    pattern1 = re.compile(r"(今日内|今白内|令日内|令今日内|今日|含日内|)")
     result = pattern.search(text)
     result1 = pattern1.search(text)
     if result:
+        # 如果不是“前”结尾，在后面加上“前”
+        if '前' not in result.group(1):
+            return result.group(1) + '前'
         return result.group(1)
     elif result1:
         return '今日内'
@@ -23,13 +26,33 @@ def extract_uid(str):
         return int(match.group(1))
     return None
 
-def extract_level(str):
-    level_str = str.replace('\n', '')
-    if 'c' in level_str:
-        level_str = level_str.replace('c', '9')
-    elif 'C' in level_str:
-        level_str = level_str.replace('C', '0')
+def extract_level(level):
+    if level is None or level == '':
+        return None
+    level_str = str(level).replace('\n', '').replace('＇', '')
 
+    # 特殊情况替换
+    replacements = {
+        'AC': '10',
+        '92': '22',
+        'o': '0',
+        'c': '0',
+        'C': '0',
+        's': '9',
+        'S': '9',
+        'g': '9',
+        '℃': '9'
+    }
+
+    for key, value in replacements.items():
+        level_str = level_str.replace(key, value)
+
+    # 如果大于两位数，只取前两位
+    if len(level_str) > 2:
+        level_str = level_str[:2]
+    # 如果level_str不是数字，返回None
+    if not level_str.isdigit():
+        return None
     return int(level_str)
 
 def read_file(file):
@@ -58,7 +81,7 @@ def process_data(df):
         uid = extract_uid(name)
         if '问题账号' in name:
             continue
-        elif '等级' not in name:
+        elif 'LEVELINFO' not in name:
             last_login = match_last_login(row['OCR'])
             data_dict = {'uid': uid, 'last_login': last_login}
             list1.append(data_dict)
@@ -87,4 +110,4 @@ def execute_zzz_file(file):
 
 
 if __name__ == "__main__":
-    execute_zzz_file("D:\\ZZZPIC\\[OCR]_2024-08-17_20240817_2327.csv")
+    execute_zzz_file("D:\\ZZZPIC\\[OCR]_2024-08-18_20240818_1105.csv")
