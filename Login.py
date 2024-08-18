@@ -73,7 +73,7 @@ if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     icon_path = os.path.join(current_dir, 'icon', 'HSR_HH.ico')
     app.setWindowIcon(QIcon(icon_path))
-    qss_file_path = os.path.join(current_dir, 'qss', 'Ubuntu.qss')
+    qss_file_path = os.path.join(current_dir, 'qss', 'MacOS.qss')
     app.setStyleSheet(read_qss_file(qss_file_path))
     stats = MyWindow()
     stats.show()

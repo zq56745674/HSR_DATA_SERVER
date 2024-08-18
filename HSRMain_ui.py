@@ -16,11 +16,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QMainWindow, QMenu, QMenuBar,
-    QProgressBar, QPushButton, QRadioButton, QSizePolicy,
-    QSpacerItem, QStatusBar, QTabWidget, QTextBrowser,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHBoxLayout,
+    QLabel, QLineEdit, QMainWindow, QMenu,
+    QMenuBar, QPlainTextEdit, QProgressBar, QPushButton,
+    QRadioButton, QSizePolicy, QSpacerItem, QStatusBar,
+    QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -425,6 +425,114 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addWidget(self.textBrowser)
 
         self.tabWidget.addTab(self.tabWidgetPage2, "")
+        self.tabWidgetPage3 = QWidget()
+        self.tabWidgetPage3.setObjectName(u"tabWidgetPage3")
+        self.verticalLayout_6 = QVBoxLayout(self.tabWidgetPage3)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.label = QLabel(self.tabWidgetPage3)
+        self.label.setObjectName(u"label")
+        font1 = QFont()
+        font1.setFamilies([u"\u9ed1\u4f53"])
+        font1.setPointSize(12)
+        self.label.setFont(font1)
+
+        self.verticalLayout_6.addWidget(self.label)
+
+        self.horizontalLayout_16 = QHBoxLayout()
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.fromComboBox = QComboBox(self.tabWidgetPage3)
+        self.fromComboBox.addItem("")
+        self.fromComboBox.addItem("")
+        self.fromComboBox.addItem("")
+        self.fromComboBox.setObjectName(u"fromComboBox")
+        self.fromComboBox.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_16.addWidget(self.fromComboBox)
+
+        self.toComboBox = QComboBox(self.tabWidgetPage3)
+        self.toComboBox.addItem("")
+        self.toComboBox.addItem("")
+        self.toComboBox.setObjectName(u"toComboBox")
+        self.toComboBox.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_16.addWidget(self.toComboBox)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_16.addItem(self.horizontalSpacer_2)
+
+        self.translateButton = QPushButton(self.tabWidgetPage3)
+        self.translateButton.setObjectName(u"translateButton")
+        self.translateButton.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_16.addWidget(self.translateButton)
+
+        self.horizontalLayout_16.setStretch(0, 1)
+        self.horizontalLayout_16.setStretch(1, 1)
+        self.horizontalLayout_16.setStretch(2, 4)
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_16)
+
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.fromTextEdit = QPlainTextEdit(self.tabWidgetPage3)
+        self.fromTextEdit.setObjectName(u"fromTextEdit")
+        font2 = QFont()
+        font2.setPointSize(13)
+        self.fromTextEdit.setFont(font2)
+
+        self.horizontalLayout_14.addWidget(self.fromTextEdit)
+
+        self.toTextBrowser = QTextBrowser(self.tabWidgetPage3)
+        self.toTextBrowser.setObjectName(u"toTextBrowser")
+        self.toTextBrowser.setFont(font2)
+
+        self.horizontalLayout_14.addWidget(self.toTextBrowser)
+
+        self.horizontalLayout_14.setStretch(1, 1)
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_14)
+
+        self.horizontalLayout_17 = QHBoxLayout()
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.label_2 = QLabel(self.tabWidgetPage3)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setFont(font1)
+
+        self.horizontalLayout_17.addWidget(self.label_2)
+
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_17.addItem(self.horizontalSpacer_3)
+
+        self.sendAIButton = QPushButton(self.tabWidgetPage3)
+        self.sendAIButton.setObjectName(u"sendAIButton")
+        self.sendAIButton.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_17.addWidget(self.sendAIButton)
+
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_17)
+
+        self.horizontalLayout_15 = QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.fromTextEdit_2 = QPlainTextEdit(self.tabWidgetPage3)
+        self.fromTextEdit_2.setObjectName(u"fromTextEdit_2")
+        self.fromTextEdit_2.setFont(font2)
+
+        self.horizontalLayout_15.addWidget(self.fromTextEdit_2)
+
+        self.toTextBrowser_2 = QTextBrowser(self.tabWidgetPage3)
+        self.toTextBrowser_2.setObjectName(u"toTextBrowser_2")
+        self.toTextBrowser_2.setFont(font2)
+
+        self.horizontalLayout_15.addWidget(self.toTextBrowser_2)
+
+        self.horizontalLayout_15.setStretch(1, 1)
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_15)
+
+        self.tabWidget.addTab(self.tabWidgetPage3, "")
 
         self.verticalLayout_3.addWidget(self.tabWidget)
 
@@ -437,6 +545,9 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QRect(0, 0, 821, 33))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
+        self.menu.setMinimumSize(QSize(0, 0))
+        self.menu.setSizeIncrement(QSize(0, 0))
+        self.menu.setBaseSize(QSize(0, 0))
         self.menuToggle = QMenu(self.menu)
         self.menuToggle.setObjectName(u"menuToggle")
         MainWindow.setMenuBar(self.menubar)
@@ -533,6 +644,18 @@ class Ui_MainWindow(object):
         self.fileLabel_2.setText(QCoreApplication.translate("MainWindow", u"\u672a\u9009\u62e9\u6587\u4ef6", None))
         self.fileZZZExeButton.setText(QCoreApplication.translate("MainWindow", u"\u5904\u7406", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage2), QCoreApplication.translate("MainWindow", u"ZZZ\u6587\u4ef6\u5904\u7406", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"\u767e\u5ea6\u7ffb\u8bd1", None))
+        self.fromComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"\u81ea\u52a8", None))
+        self.fromComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"\u4e2d\u6587", None))
+        self.fromComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"\u82f1\u6587", None))
+
+        self.toComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"\u4e2d\u6587", None))
+        self.toComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"\u82f1\u6587", None))
+
+        self.translateButton.setText(QCoreApplication.translate("MainWindow", u"\u7ffb\u8bd1", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"AI\u5bf9\u8bdd", None))
+        self.sendAIButton.setText(QCoreApplication.translate("MainWindow", u"\u53d1\u9001", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage3), QCoreApplication.translate("MainWindow", u"\u767e\u5ea6API", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u83dc\u5355", None))
         self.menuToggle.setTitle(QCoreApplication.translate("MainWindow", u"Theme", None))
     # retranslateUi

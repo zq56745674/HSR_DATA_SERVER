@@ -2,6 +2,10 @@ import requests
 import random
 from hashlib import md5
 import configparser
+import logging
+
+# 设置日志
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class BaiDuFanyi:
     def __init__(self):
@@ -15,12 +19,10 @@ class BaiDuFanyi:
         self.url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
         self.appid = appKey
         self.secretKey = appSecret
-        self.fromLang = 'auto'
-        self.toLang = 'zh'
         self.salt = random.randint(32768,65536)
         self.header = {'Content-Type': 'application/x-www-form-urlencoded'}
     
-    def BdTrans(self,text):
+    def BdTrans(self, text, formLang = 'auto', toLang = 'zh'):
         sign = self.appid + text + str(self.salt) + self.secretKey
         md = md5()
         md.update(sign.encode(encoding='utf-8'))
@@ -28,14 +30,14 @@ class BaiDuFanyi:
         data = {
             "appid": self.appid,
             "q": text,
-            "from": self.fromLang,
-            "to": self.toLang,
+            "from": formLang,
+            "to": toLang,
             "salt": self.salt,
             "sign": sign
         }
         response = requests.post(self.url, params= data, headers= self.header)  # 发送post请求
         text = response.json()  # 返回的为json格式用json接收数据
-        print(text)
+        logging.info(text)
         results = text['trans_result'][0]['dst']
         return results
 

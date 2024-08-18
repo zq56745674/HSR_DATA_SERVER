@@ -11,6 +11,8 @@ import pymysql
 import os
 from zipfile import BadZipFile
 from contextlib import contextmanager
+from util import baidu_translate
+from util import qianfan_chat
 import ZZZDataExe
 
 # 设置日志
@@ -20,6 +22,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, db_connection):
         super().__init__()
         self.setupUi(self)
+        self.menu.setFixedWidth(100)
         self.db = db_connection
         self.uid = ""
         self.serverName = ""
@@ -58,6 +61,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             (self.fileButton_2, lambda: self.upload_file(2)),
             (self.fileZZZExeButton, self.execute_zzz_file)
         ])
+        # tab3按钮
+        self.bind_buttons([
+            (self.translateButton, self.translate_text),
+            (self.sendAIButton, self.send_ai_text)
+        ])
         # 单选按钮
         self.bind_radio_buttons([
             self.radioButton_cn,
@@ -79,6 +87,50 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def bind_radio_buttons(self, radio_buttons):
         for radio_button in radio_buttons:
             radio_button.clicked.connect(self.radio_button_clicked)
+    
+    def send_ai_text(self):
+        text = self.fromTextEdit_2.toPlainText()
+        self.start_thread(apprType="4", fromText=text)
+    
+    def translate_text(self):
+        text = self.fromTextEdit.toPlainText()
+        fromLang_str = self.fromComboBox.currentText()
+        toLang_str = self.toComboBox.currentText()
+        fromLang = self.get_lang_code(fromLang_str)
+        toLang = self.get_lang_code(toLang_str)
+        self.start_thread(apprType="3", fromText=text, fromLang=fromLang, toLang=toLang)
+    
+    def get_lang_code(self, lang_str):
+        lang_dict = {
+            "自动检测": "auto",
+            "中文": "zh",
+            "英语": "en",
+            "日语": "jp",
+            "韩语": "kor",
+            "法语": "fra",
+            "西班牙语": "spa",
+            "泰语": "th",
+            "阿拉伯语": "ara",
+            "俄语": "ru",
+            "葡萄牙语": "pt",
+            "德语": "de",
+            "意大利语": "it",
+            "希腊语": "el",
+            "荷兰语": "nl",
+            "波兰语": "pl",
+            "保加利亚语": "bul",
+            "爱沙尼亚语": "est",
+            "丹麦语": "dan",
+            "芬兰语": "fin",
+            "捷克语": "cs",
+            "罗马尼亚语": "rom",
+            "斯洛文尼亚语": "slo",
+            "瑞典语": "swe",
+            "匈牙利语": "hu",
+            "繁体中文": "cht",
+            "越南语": "vie"
+        }
+        return lang_dict.get(lang_str, "auto")
 
     def toggle_theme(self, theme):
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -144,14 +196,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_min_max_uid()
         self.start_thread(apprType="2", maxLen=self.maxLenLineEdit.text(), maxUid=self.uid)
 
-    def start_thread(self, apprType, file=None, maxLen=None, maxUid=None):
+    def start_thread(self, apprType, file=None, maxLen=None, maxUid=None, fromText=None, fromLang=None, toLang=None):
         self.interrupted = False
         self.current_index = 0
         if apprType == "1" and not file:
             self.show_error_message("未选择文件")
             return
         self.set_buttons_enabled(False)
-        self.thread = ExecuteFileThread(self.db, file, self.serverName, self.interrupted, self.current_index, apprType, maxLen, maxUid, self.min_uid, self.max_uid)
+        self.thread = ExecuteFileThread(self.db, file, self.serverName, self.interrupted, self.current_index, apprType, maxLen, maxUid, self.min_uid, self.max_uid, fromText, fromLang, toLang)
         self.thread.finished_info.connect(self.on_thread_finished)
         self.thread.error_occurred.connect(self.show_error_message)
         self.thread.info_view.connect(self.show_info_message)
@@ -199,8 +251,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show_message(message, title="错误", icon=QMessageBox.Critical)
         self.set_buttons_enabled(True)
 
-    def show_info_message(self, message):
-        self.infoBrowser.append(message)
+    def show_info_message(self, message, textBrowser):
+        if textBrowser == "infoBrowser":
+            getattr(self, textBrowser).append(message)
+        else:
+            getattr(self, textBrowser).setText(message)
 
     def get_max_uid(self, db):
         qry_sql = "select uid from sr_max_uid"
@@ -307,10 +362,10 @@ class ExecuteFileThread(QThread):
     progress = Signal(int)
     finished_info = Signal()
     error_occurred = Signal(str, int)
-    info_view = Signal(str)
+    info_view = Signal(str, str)
     progress_updated = Signal(int, str, str)
 
-    def __init__(self, db, file, serverName, interrupted, current_index, apprType, maxLen, maxUid, minEditUid, maxEditUid):
+    def __init__(self, db, file, serverName, interrupted, current_index, apprType, maxLen, maxUid, minEditUid, maxEditUid, fromText, fromLang, toLang):
         super().__init__()
         self.db = db
         self.file = file
@@ -322,6 +377,9 @@ class ExecuteFileThread(QThread):
         self.maxUid = maxUid
         self.minEditUid = minEditUid
         self.maxEditUid = maxEditUid
+        self.fromText = fromText
+        self.fromLang = fromLang
+        self.toLang = toLang
         self.start_time = None
 
     def run(self):
@@ -329,6 +387,32 @@ class ExecuteFileThread(QThread):
             self.execute_file()
         elif self.apprType == "2":
             self.random_uid()
+        elif self.apprType == "3":
+            self.translate_text()
+        elif self.apprType == "4":
+            self.send_ai_text()
+    
+    def send_ai_text(self):
+        text = self.fromText
+        if not text:
+            return
+        try:
+            aiChatUtil = qianfan_chat.QianFanChat()
+            result = aiChatUtil.chat(text)
+            self.info_view.emit(result, "toTextBrowser_2")
+        except Exception as e:
+            self.error_occurred.emit(str(e), 0)
+
+    def translate_text(self):
+        text = self.fromText
+        if not text:
+            return
+        try:
+            translateUtil = baidu_translate.BaiDuFanyi()
+            result = translateUtil.BdTrans(text, self.fromLang, self.toLang)
+            self.info_view.emit(result, "toTextBrowser")
+        except Exception as e:
+            self.error_occurred.emit(str(e), 0)
         
     def random_uid(self):
         not_found_count = 0
@@ -346,7 +430,7 @@ class ExecuteFileThread(QThread):
         max_uid = max_uid = self.get_max_uid() if self.maxEditUid == 0 else self.maxEditUid
         min_uid = self.get_min_uid()
 
-        print(f"self.maxEditUid: {self.maxEditUid}, self.minEditUid: {self.minEditUid}, max_uid: {max_uid}, min_uid: {min_uid}")
+        # print(f"self.maxEditUid: {self.maxEditUid}, self.minEditUid: {self.minEditUid}, max_uid: {max_uid}, min_uid: {min_uid}")
 
         for i in range(1, maxLen):
             if self.interrupted:
@@ -357,7 +441,7 @@ class ExecuteFileThread(QThread):
             # 重置计数器，如果已经达到循环次数限制
             if counter >= loop_limit:
                 logging.info(f"已达到循环次数限制，休息 {rest_time} 秒....................................")
-                self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................")
+                self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................", 'infoBrowser')
                 counter = 0  # 重置计数器
                 time.sleep(rest_time)  # 休息rest_time秒
                 
@@ -376,7 +460,7 @@ class ExecuteFileThread(QThread):
             headers = {"User-Agent": selected_user_agent}
             try:
                 logging.info(f"i {i} url: {url}")
-                self.info_view.emit(f" i {i} url: {url}")
+                self.info_view.emit(f" i {i} url: {url}", 'infoBrowser')
                 response = requests.get(url, headers=headers, timeout=5)  # 设置请求超时时间
                 if response.status_code == 200:
                     # 将JSON数据保存到文件
@@ -417,17 +501,17 @@ class ExecuteFileThread(QThread):
                 elif response.status_code == 404:
                     not_found_count += 1
                     logging.info(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
-                    self.info_view.emit(f" 请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
+                    self.info_view.emit(f" 请求失败，状态码：{response.status_code}，404计数：{not_found_count}", 'infoBrowser')
                     self.log_request_failure(uid, response.status_code, table_name)
                 else:
                     # 请求失败，打印错误信息
                     logging.error(f"Error: {response.status_code} for uid: {uid}")
-                    self.info_view.emit(f" Error: {response.status_code} for uid: {uid}")
+                    self.info_view.emit(f" Error: {response.status_code} for uid: {uid}", 'infoBrowser')
                     self.log_request_failure(uid, response.status_code, None, response.text)
             except requests.exceptions.RequestException as e:
                 # 请求异常，打印错误信息
                 logging.error(f"请求出错：{e} for uid: {uid}")
-                self.info_view.emit(f" 请求出错：{e} for uid: {uid}")
+                self.info_view.emit(f" 请求出错：{e} for uid: {uid}", 'infoBrowser')
                 self.log_request_failure(uid, 500, None, str(e))
             
             # 更新进度条
@@ -491,7 +575,7 @@ class ExecuteFileThread(QThread):
             # 重置计数器，如果已经达到循环次数限制
             if counter >= loop_limit:
                 logging.info(f"已达到循环次数限制，休息 {rest_time} 秒....................................")
-                self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................")
+                self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................", 'infoBrowser')
                 counter = 0  # 重置计数器
                 time.sleep(rest_time)  # 休息10秒
 
@@ -513,7 +597,7 @@ class ExecuteFileThread(QThread):
             headers = {"User-Agent": selected_user_agent}
             try:
                 logging.info(f"i {index} url: {url}")
-                self.info_view.emit(f" i {index} url: {url}")
+                self.info_view.emit(f" i {index} url: {url}", 'infoBrowser')
                 response = requests.get(url, headers=headers, timeout=5)  # 设置请求超时时间
                 if response.status_code == 200:
                     # 将JSON数据保存到文件
@@ -555,14 +639,14 @@ class ExecuteFileThread(QThread):
                 else:
                     # 请求失败，打印错误信息
                     logging.error(f"Error: {response.status_code} for uid: {uid}")
-                    self.info_view.emit(f" Error: {response.status_code} for uid: {uid}")
+                    self.info_view.emit(f" Error: {response.status_code} for uid: {uid}", 'infoBrowser')
                     with self.get_cursor(self.db) as cursor:
                         cursor.execute(fail_sql, (uid, response.status_code, response.reason))
                         self.db.commit()
             except requests.exceptions.RequestException as e:
                 # 请求异常，打印错误信息
                 logging.error(f"请求出错：{e} for uid: {uid}")
-                self.info_view.emit(f" 请求出错：{e} for uid: {uid}")
+                self.info_view.emit(f" 请求出错：{e} for uid: {uid}", 'infoBrowser')
                 with self.get_cursor(self.db) as cursor:
                     cursor.execute(fail_sql, (uid, 500, str(e)))
                     self.db.commit()
@@ -667,7 +751,7 @@ class ExecuteFileThread(QThread):
             result.append(after_info)
         else:
             logging.info('两个字典相同')
-            self.info_view.emit(' 两个字典相同')
+            self.info_view.emit(' 两个字典相同', 'infoBrowser')
         return result
 
     def generate_remark(self, assist_avatar_list, avatar_detail_list):
