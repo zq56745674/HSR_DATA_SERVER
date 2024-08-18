@@ -367,6 +367,10 @@ class ExecuteFileThread(QThread):
 
     def __init__(self, db, file, serverName, interrupted, current_index, apprType, maxLen, maxUid, minEditUid, maxEditUid, fromText, fromLang, toLang):
         super().__init__()
+        self.initialize_attributes(db, file, serverName, interrupted, current_index, apprType, maxLen, maxUid, minEditUid, maxEditUid, fromText, fromLang, toLang)
+        self.start_time = None
+
+    def initialize_attributes(self, db, file, serverName, interrupted, current_index, apprType, maxLen, maxUid, minEditUid, maxEditUid, fromText, fromLang, toLang):
         self.db = db
         self.file = file
         self.serverName = serverName
@@ -380,17 +384,17 @@ class ExecuteFileThread(QThread):
         self.fromText = fromText
         self.fromLang = fromLang
         self.toLang = toLang
-        self.start_time = None
 
     def run(self):
-        if self.apprType == "1":
-            self.execute_file()
-        elif self.apprType == "2":
-            self.random_uid()
-        elif self.apprType == "3":
-            self.translate_text()
-        elif self.apprType == "4":
-            self.send_ai_text()
+        method_mapping = {
+            "1": self.execute_file,
+            "2": self.random_uid,
+            "3": self.translate_text,
+            "4": self.send_ai_text
+        }
+        method = method_mapping.get(self.apprType)
+        if method:
+            method()
     
     def send_ai_text(self):
         text = self.fromText
@@ -401,7 +405,7 @@ class ExecuteFileThread(QThread):
             result = aiChatUtil.chat(text)
             self.info_view.emit(result, "toTextBrowser_2")
         except Exception as e:
-            self.error_occurred.emit(str(e), 0)
+            self.error_occurred.emit(f"send_ai_text error: {str(e)}", 0)
 
     def translate_text(self):
         text = self.fromText
@@ -412,7 +416,7 @@ class ExecuteFileThread(QThread):
             result = translateUtil.BdTrans(text, self.fromLang, self.toLang)
             self.info_view.emit(result, "toTextBrowser")
         except Exception as e:
-            self.error_occurred.emit(str(e), 0)
+            self.error_occurred.emit(f"translate_text error: {str(e)}", 0)
         
     def random_uid(self):
         not_found_count = 0

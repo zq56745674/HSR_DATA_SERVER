@@ -9,39 +9,49 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class BaiDuFanyi:
     def __init__(self):
-        # 读取配置文件
-        config = configparser.ConfigParser()
-        config.read('config/config.ini')
-
-        appKey = config['baidufanyi']['BAIDU_APP_ID'] #你在第一步申请的APP ID
-        appSecret = config['baidufanyi']['BAIDU_SECRET'] #公钥
-
+        self._load_config()
         self.url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
-        self.appid = appKey
-        self.secretKey = appSecret
-        self.salt = random.randint(32768,65536)
+        self.salt = random.randint(32768, 65536)
         self.header = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+    def _load_config(self):
+        config = configparser.ConfigParser()
+        try:
+            config.read('config/config.ini')
+            self.appid = config['baidufanyi']['BAIDU_APP_ID']
+            self.secretKey = config['baidufanyi']['BAIDU_SECRET']
+        except Exception as e:
+            logging.error(f"Error reading config file: {e}")
+            raise
     
-    def BdTrans(self, text, formLang = 'auto', toLang = 'zh'):
+    def BdTrans(self, text, fromLang='auto', toLang='zh'):
         sign = self.appid + text + str(self.salt) + self.secretKey
         md = md5()
         md.update(sign.encode(encoding='utf-8'))
-        sign =md.hexdigest()
+        sign = md.hexdigest()
         data = {
             "appid": self.appid,
             "q": text,
-            "from": formLang,
+            "from": fromLang,
             "to": toLang,
             "salt": self.salt,
             "sign": sign
         }
-        response = requests.post(self.url, params= data, headers= self.header)  # 发送post请求
-        text = response.json()  # 返回的为json格式用json接收数据
-        logging.info(text)
-        results = text['trans_result'][0]['dst']
-        return results
+        try:
+            response = requests.post(self.url, params=data, headers=self.header)
+            response.raise_for_status()
+            text = response.json()
+            logging.info(text)
+            results = text['trans_result'][0]['dst']
+            return results
+        except requests.RequestException as e:
+            logging.error(f"Error during translation request: {e}")
+            raise
 
-if __name__=='__main__':
-    BaiduTranslate_test = BaiDuFanyi()
-    Results = BaiduTranslate_test.BdTrans("Invalid Sign") #要翻译的词组
-    print(Results)
+def main():
+    baidu_translate = BaiDuFanyi()
+    results = baidu_translate.BdTrans("Invalid Sign")  # 要翻译的词组
+    print(results)
+
+if __name__ == '__main__':
+    main()
