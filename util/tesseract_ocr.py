@@ -8,7 +8,7 @@ import pandas as pd
 
 preprocess = "thresh"
 
-file = 'D:/ZZZPIC/LEVELINFO'
+file = 'D:/ZZZPIC/2024-08-18'
 list = []
 # 循环读取文件夹下的所有文件
 for root, dirs, files in os.walk(file):
@@ -41,7 +41,7 @@ for root, dirs, files in os.walk(file):
             # kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
             # gray = cv2.filter2D(gray, -1, kernel)
 
-            filename = "scan\\img\\{}.png".format(os.getpid())
+            filename = "{}.png".format(os.getpid())
             cv2.imwrite(filename, image)
 
             # **--oem 3**：OCR 引擎模式（OEM，OCR Engine Mode）。
