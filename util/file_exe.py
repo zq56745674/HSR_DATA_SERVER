@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-file = f'D:\\ZZZPIC\\2024-08-18\\'
+file = f'D:\\ZZZPIC\\2024-08-19\\'
 dst = f'D:\\ZZZPIC\\LEVELINFO\\'
 uid_file = 'C:\\Users\\momo\Desktop\\BTUID.xlsx'
 

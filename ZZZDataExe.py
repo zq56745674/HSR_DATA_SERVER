@@ -1,6 +1,12 @@
 import re
 import pandas as pd
 from zipfile import BadZipFile
+import os
+import time
+import shutil
+import pytesseract
+import cv2
+from PIL import Image
 
 # 匹配最后登录字符串
 def match_last_login(text):
@@ -70,6 +76,46 @@ def read_file(file):
     except BadZipFile:
         raise BadZipFile("文件格式不正确")
 
+def copy_file(uid_with_empty_level):
+    # 生成当前日期yyyy-mm-dd
+    date = time.strftime('%Y-%m-%d', time.localtime(time.time()))
+    src_dir = f'D:\\ZZZPIC\\{date}\\'
+    dst_dir = f'D:\\ZZZPIC\\LEVELINFO\\'
+    filename_list = [f'{uid}.bmp' for uid in uid_with_empty_level]
+
+    # 循环读取文件夹下的所有文件
+    for root, _, files in os.walk(src_dir):
+        for file in files:
+            for filename in filename_list:
+                if filename in file:
+                    print(file)
+                    # 复制文件到指定文件夹
+                    shutil.copy(os.path.join(root, file), os.path.join(dst_dir, file))
+
+def tesseract_ocr():
+    src_dir = f'D:\\ZZZPIC\\LEVELINFO\\'
+    data_list = []
+
+    for root, _, files in os.walk(src_dir):
+        for file in files:
+            if file.startswith('LEVELINFO'):
+                print(file)
+                image = cv2.imread(os.path.join(root, file))
+                temp_filename = f"{os.getpid()}.png"
+                cv2.imwrite(temp_filename, image)
+
+                custom_config = r'-l eng.num --oem 3 --psm 6'
+                text = pytesseract.image_to_string(Image.open(temp_filename), config=custom_config)
+                data_list.append({'Name': file, 'OCR': text.replace('\n', '')})
+
+                os.remove(temp_filename)
+
+    df = pd.DataFrame(data_list)
+    timestamp = int(time.time())
+    excel_file = f'D:/ZZZPIC/{timestamp}.xlsx'
+    df.to_excel(excel_file, index=False)
+    return excel_file
+
 def process_data(df):
     # 初始化列表和辅助字典
     list1 = []
@@ -101,13 +147,29 @@ def process_data(df):
         else:
             list1.append(item)
 
+    # 提取list1中level为空的uid，复制到LEVELINFO文件夹
+    uid_with_empty_level = [item['uid'] for item in list1 if 'level' not in item or item['level'] is None]
+    copy_file(uid_with_empty_level)
+
+    # OCR识别LEVELINFO文件夹中的等级
+    excel_file = tesseract_ocr()
+    df1 = pd.read_excel(excel_file, engine='openpyxl')
+    for _, row in df1.iterrows():
+        name = str(row['Name'])
+        uid = extract_uid(name)
+        level = extract_level(row['OCR'])
+        if uid in uid_dict:
+            uid_dict[uid]['level'] = level
+        else:
+            data_dict = {'uid': uid, 'level': level}
+            list1.append(data_dict)
+
     return pd.DataFrame(list1)
 
 def execute_zzz_file(file):
     df = read_file(file)
     df1 = process_data(df)
-    df1.to_excel(file.replace('.csv', '_output.xlsx'), index=False) 
-
+    df1.to_excel(file.replace('.csv', '_output.xlsx'), index=False)
 
 if __name__ == "__main__":
-    execute_zzz_file("D:\\ZZZPIC\\[OCR]_2024-08-18_20240818_1105.csv")
+    execute_zzz_file("D:\\ZZZPIC\\[OCR]_2024-08-20_20240820_0707.csv")

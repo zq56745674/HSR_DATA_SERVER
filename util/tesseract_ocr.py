@@ -8,7 +8,7 @@ import pandas as pd
 
 preprocess = "thresh"
 
-file = 'D:/ZZZPIC/2024-08-18'
+file = 'D:/ZZZPIC/LEVELINFO'
 list = []
 # 循环读取文件夹下的所有文件
 for root, dirs, files in os.walk(file):
