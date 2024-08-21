@@ -92,7 +92,7 @@ def process_user_data(detail_info, record_info, assist_avatar_list, avatar_detai
     remark = ""
     # 1221 云璃 1224 巡猎三月 1218 椒丘
     # avatarIdList = [8005, 8006, 1315, 1314, 1312, 1310, 1309, 1308, 1307, 1306, 1305, 1304, 1303, 1302, 1224, 1221, 1218]
-    avatarIdList = [1221, 1224]
+    avatarIdList = [1221, 1224, 1218]
     if assist_avatar_list is not None:
         for avatar in assist_avatar_list:
             if avatar.get('avatarId') is not None and avatar.get('avatarId') in avatarIdList:
