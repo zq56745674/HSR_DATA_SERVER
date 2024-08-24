@@ -7,12 +7,12 @@ import pandas as pd
 import random
 import time
 import logging
-import pymysql
 import os
 from zipfile import BadZipFile
-from contextlib import contextmanager
 from util import baidu_translate
 from util import qianfan_chat
+from util import hsr_data_util
+from dao import hsr_mapper
 import ZZZDataExe
 
 # 设置日志
@@ -96,41 +96,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         text = self.fromTextEdit.toPlainText()
         fromLang_str = self.fromComboBox.currentText()
         toLang_str = self.toComboBox.currentText()
-        fromLang = self.get_lang_code(fromLang_str)
-        toLang = self.get_lang_code(toLang_str)
+        fromLang = baidu_translate.BaiDuFanyi().get_lang_code(fromLang_str)
+        toLang = baidu_translate.BaiDuFanyi().get_lang_code(toLang_str)
         self.start_thread(apprType="3", fromText=text, fromLang=fromLang, toLang=toLang)
-    
-    def get_lang_code(self, lang_str):
-        lang_dict = {
-            "自动检测": "auto",
-            "中文": "zh",
-            "英语": "en",
-            "日语": "jp",
-            "韩语": "kor",
-            "法语": "fra",
-            "西班牙语": "spa",
-            "泰语": "th",
-            "阿拉伯语": "ara",
-            "俄语": "ru",
-            "葡萄牙语": "pt",
-            "德语": "de",
-            "意大利语": "it",
-            "希腊语": "el",
-            "荷兰语": "nl",
-            "波兰语": "pl",
-            "保加利亚语": "bul",
-            "爱沙尼亚语": "est",
-            "丹麦语": "dan",
-            "芬兰语": "fin",
-            "捷克语": "cs",
-            "罗马尼亚语": "rom",
-            "斯洛文尼亚语": "slo",
-            "瑞典语": "swe",
-            "匈牙利语": "hu",
-            "繁体中文": "cht",
-            "越南语": "vie"
-        }
-        return lang_dict.get(lang_str, "auto")
 
     def toggle_theme(self, theme):
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -258,14 +226,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             getattr(self, textBrowser).setText(message)
 
     def get_max_uid(self, db):
-        qry_sql = "select uid from sr_max_uid"
-        with self.get_cursor(db) as cursor:
-            cursor.execute(qry_sql)
-            result = cursor.fetchall()
-            if result:
-                self.set_max_uid_labels(result)
-            else:
-                logging.error("查询失败")
+        result = hsr_mapper.get_max_uid(db)
+        if result:
+            self.set_max_uid_labels(result)
+        else:
+            logging.error("查询失败")
 
     def set_max_uid_labels(self, result):
         labels = ['cn', 'b', 'mei', 'ou', 'ya', 'gat']
@@ -280,14 +245,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.fileLabel.setText(file_path if file_path else "未选择文件")
         elif tab == 2:
             self.fileLabel_2.setText(file_path if file_path else "未选择文件")
-    
-    @contextmanager
-    def get_cursor(self, db):
-        cursor = db.cursor()
-        try:
-            yield cursor
-        finally:
-            cursor.close()
 
     def dragEnterEvent(self, event):
         # 检查拖拽的文件类型
@@ -401,8 +358,7 @@ class ExecuteFileThread(QThread):
         if not text:
             return
         try:
-            aiChatUtil = qianfan_chat.QianFanChat()
-            result = aiChatUtil.chat(text)
+            result = qianfan_chat.QianFanChat().chat(text)
             self.info_view.emit(result, "toTextBrowser_2")
         except Exception as e:
             self.error_occurred.emit(f"send_ai_text error: {str(e)}", 0)
@@ -412,8 +368,7 @@ class ExecuteFileThread(QThread):
         if not text:
             return
         try:
-            translateUtil = baidu_translate.BaiDuFanyi()
-            result = translateUtil.BdTrans(text, self.fromLang, self.toLang)
+            result = baidu_translate.BaiDuFanyi().BdTrans(text, self.fromLang, self.toLang)
             self.info_view.emit(result, "toTextBrowser")
         except Exception as e:
             self.error_occurred.emit(f"translate_text error: {str(e)}", 0)
@@ -434,8 +389,6 @@ class ExecuteFileThread(QThread):
         max_uid = max_uid = self.get_max_uid() if self.maxEditUid == 0 else self.maxEditUid
         min_uid = self.get_min_uid()
 
-        # print(f"self.maxEditUid: {self.maxEditUid}, self.minEditUid: {self.minEditUid}, max_uid: {max_uid}, min_uid: {min_uid}")
-
         for i in range(1, maxLen):
             if self.interrupted:
                 logging.info("处理文件被中断")
@@ -452,14 +405,7 @@ class ExecuteFileThread(QThread):
             randomNum = random.randint(self.minEditUid, max_uid) + min_uid
             uid = str(randomNum)
             url = endpoint + uid
-            
             table_name = self.get_table_name()
-
-            qry_sql = "select `UID`, `signature`, `platform`, `nickname`, `level`, `friend_count`, `max_rogue_challenge_score`, `achievement_count`, `equipment_count`, `avatar_count`, `head_icon`, `relic_count`, `book_count`, `music_count` from " + table_name + " where uid = %s"
-            insert_sql = "INSERT INTO " + table_name + " (UID, signature, platform, nickname, `level`, friend_count, max_rogue_challenge_score, achievement_count, equipment_count, avatar_count, head_icon, CREATE_TIME, remark, relic_count, book_count, music_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), %s, %s, %s, %s)"    
-            update_sql = "UPDATE " + table_name + " SET UID=%s, signature=%s, platform=%s, nickname=%s, `level`=%s, friend_count=%s, max_rogue_challenge_score=%s, achievement_count=%s, equipment_count=%s, avatar_count=%s, head_icon=%s, remark=%s, relic_count=%s, book_count=%s, music_count=%s, LAST_UPDATE_TIME=now() WHERE UID=%s"
-            insert_record_sql = "INSERT INTO `sr_user_info_upd_record` (`UID`, `UPDATE_DATE`, `before_info`, `after_info`, `CREATE_TIME`) VALUES (%s, now(), %s, %s, now())"
-            
             # 发送GET请求
             headers = {"User-Agent": selected_user_agent}
             try:
@@ -487,36 +433,35 @@ class ExecuteFileThread(QThread):
                     musicCount = record_info.get("musicCount")
                     relicCount = record_info.get("relicCount") # 仪器数量
                     headIcon = detail_info.get("headIcon")
-                    remark = self.generate_remark(assist_avatar_list, avatar_detail_list)
+                    remark = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
 
-                    with self.get_cursor(self.db) as cursor:
-                        cursor.execute(qry_sql, (uid,))
-                        exist = cursor.fetchone()
-                        if exist:
-                            dict1 = self.create_dict_from_db(exist)
-                            dict2 = self.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
-                            result = self.print_dict_differences(dict1, dict2)
-                            if result:
-                                cursor.execute(update_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, uid))
-                                cursor.execute(insert_record_sql, (uid, str(result[0]), str(result[1])))
-                        else:
-                            cursor.execute(insert_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount))
-                        self.db.commit()
+                    exist = hsr_mapper.get_user_info_by_uid(self.db, uid, table_name)
+                    if exist:
+                        dict1 = hsr_data_util.create_dict_from_db(exist)
+                        dict2 = hsr_data_util.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
+                        result = hsr_data_util.print_dict_differences(dict1, dict2)
+                        if result:
+                            hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
+                            hsr_mapper.insert_user_info_upd_record(self.db, uid, str(result[0]), str(result[1]))
+                    else:
+                        hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
+
                 elif response.status_code == 404:
                     not_found_count += 1
                     logging.info(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
                     self.info_view.emit(f" 请求失败，状态码：{response.status_code}，404计数：{not_found_count}", 'infoBrowser')
-                    self.log_request_failure(uid, response.status_code, table_name)
+                    hsr_mapper.log_request_failure(self.db, uid, response.status_code, table_name)
                 else:
                     # 请求失败，打印错误信息
                     logging.error(f"Error: {response.status_code} for uid: {uid}")
                     self.info_view.emit(f" Error: {response.status_code} for uid: {uid}", 'infoBrowser')
-                    self.log_request_failure(uid, response.status_code, None, response.text)
+                    hsr_mapper.log_request_failure(self.db, uid, response.status_code, None, response.text)
+
             except requests.exceptions.RequestException as e:
                 # 请求异常，打印错误信息
                 logging.error(f"请求出错：{e} for uid: {uid}")
                 self.info_view.emit(f" 请求出错：{e} for uid: {uid}", 'infoBrowser')
-                self.log_request_failure(uid, 500, None, str(e))
+                hsr_mapper.log_request_failure(self.db, uid, 500, None, str(e))
             
             # 更新进度条
             progress = int((i) / maxLen * 100)
@@ -591,12 +536,6 @@ class ExecuteFileThread(QThread):
             url = f"{endpoint}{uid}"
             table_name = self.get_table_name()
             
-            qry_sql = "select `UID`, `signature`, `platform`, `nickname`, `level`, `friend_count`, `max_rogue_challenge_score`, `achievement_count`, `equipment_count`, `avatar_count`, `head_icon`, `relic_count`, `book_count`, `music_count` from " + table_name + " where uid = %s"
-            insert_sql = "INSERT INTO " + table_name + " (UID, signature, platform, nickname, `level`, friend_count, max_rogue_challenge_score, achievement_count, equipment_count, avatar_count, head_icon, CREATE_TIME, remark, relic_count, book_count, music_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), %s, %s, %s, %s)"    
-            update_sql = "UPDATE " + table_name + " SET UID=%s, signature=%s, platform=%s, nickname=%s, `level`=%s, friend_count=%s, max_rogue_challenge_score=%s, achievement_count=%s, equipment_count=%s, avatar_count=%s, head_icon=%s, remark=%s, relic_count=%s, book_count=%s, music_count=%s, LAST_UPDATE_TIME=now() WHERE UID=%s"
-            insert_record_sql = "INSERT INTO `sr_user_info_upd_record` (`UID`, `UPDATE_DATE`, `before_info`, `after_info`, `CREATE_TIME`) VALUES (%s, now(), %s, %s, now())"
-            fail_sql = "INSERT INTO sr_user_info_fail_record (`UID`, `FAIL_CODE`, `FAIL_DESC`, `CREATE_TIME`) VALUES (%s, %s, %s, now())"
-            
             # 发送GET请求
             headers = {"User-Agent": selected_user_agent}
             try:
@@ -624,36 +563,28 @@ class ExecuteFileThread(QThread):
                     musicCount = record_info.get("musicCount")
                     relicCount = record_info.get("relicCount") # 仪器数量
                     headIcon = detail_info.get("headIcon")
-                    remark = self.generate_remark(assist_avatar_list, avatar_detail_list)
+                    remark = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
 
-                    with self.get_cursor(self.db) as cursor:
-                        cursor.execute(qry_sql, (uid,))
-                        exist = cursor.fetchone()
-                        if exist:
-                            dict1 = self.create_dict_from_db(exist)
-                            dict2 = self.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
-                            result = self.print_dict_differences(dict1, dict2)
-                            if result:
-                                cursor.execute(update_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, uid))
-                                cursor.execute(insert_record_sql, (uid, str(result[0]), str(result[1])))
-                        else:
-                            cursor.execute(insert_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount))
-                        self.db.commit()
-                    
+                    exist = hsr_mapper.get_user_info_by_uid(self.db, uid, table_name)
+                    if exist:
+                        dict1 = hsr_data_util.create_dict_from_db(exist)
+                        dict2 = hsr_data_util.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
+                        result = hsr_data_util.print_dict_differences(dict1, dict2)
+                        if result:
+                            hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
+                            hsr_mapper.insert_user_info_upd_record(self.db, uid, str(result[0]), str(result[1]))
+                    else:
+                        hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)                   
                 else:
                     # 请求失败，打印错误信息
                     logging.error(f"Error: {response.status_code} for uid: {uid}")
                     self.info_view.emit(f" Error: {response.status_code} for uid: {uid}", 'infoBrowser')
-                    with self.get_cursor(self.db) as cursor:
-                        cursor.execute(fail_sql, (uid, response.status_code, response.reason))
-                        self.db.commit()
+                    hsr_mapper.log_request_failure(self.db, uid, response.status_code, None, response.reason)
             except requests.exceptions.RequestException as e:
                 # 请求异常，打印错误信息
                 logging.error(f"请求出错：{e} for uid: {uid}")
                 self.info_view.emit(f" 请求出错：{e} for uid: {uid}", 'infoBrowser')
-                with self.get_cursor(self.db) as cursor:
-                    cursor.execute(fail_sql, (uid, 500, str(e)))
-                    self.db.commit()
+                hsr_mapper.log_request_failure(self.db, uid, 500, None, str(e))
             
             # 更新进度条
             progress = int((index + 1) / total_rows * 100)
@@ -685,21 +616,6 @@ class ExecuteFileThread(QThread):
             'gat': 900000001
         }
         return server_min_uid.get(self.serverName, 100000009)
-    
-    def log_request_failure(self, uid, status_code, table_name, error_desc=None):
-        try:
-            with self.get_cursor(self.db) as cursor:
-                if error_desc:
-                    fail_sql = "INSERT INTO sr_user_info_fail_record (`UID`, `FAIL_CODE`, `FAIL_DESC`, `CREATE_TIME`) VALUES (%s, %s, %s, now())"
-                    cursor.execute(fail_sql, (uid, status_code, error_desc))
-                else:
-                    insert_sql = "INSERT INTO " + table_name + " (UID, CREATE_TIME, remark) VALUES (%s, now(), %s)"
-                    cursor.execute(insert_sql, (uid, status_code))
-                self.db.commit()
-        except pymysql.MySQLError as e:
-            print(f"数据库操作失败：{e}")
-        except Exception as e:
-            print(f"发生未知错误：{e}")
 
     def calculate_remaining_time(self, current_index, total_rows):
         elapsed_time = time.time() - self.start_time
@@ -736,64 +652,6 @@ class ExecuteFileThread(QThread):
             'gat': 'sr_user_info_cht'
         }
         return server_table_map.get(self.serverName, 'sr_user_info_default')
-    
-    # 打印两个字典的不同
-    def print_dict_differences(self, dict1, dict2):
-        result = []
-        before_info = {}
-        after_info = {}
-        for key in dict1:
-            v1 = dict1[key]
-            v2 = dict2[key]
-            if key == 'platform':
-                v2 = str(dict2[key])
-            if v1 != v2:
-                before_info[key] = v1
-                after_info[key] = v2
-        if before_info:
-            result.append(before_info)
-            result.append(after_info)
-        else:
-            logging.info('两个字典相同')
-            self.info_view.emit(' 两个字典相同', 'infoBrowser')
-        return result
-
-    def generate_remark(self, assist_avatar_list, avatar_detail_list):
-        remark = ""
-        avatarIdList = [8005, 8006, 1315, 1314, 1312, 1310, 1309, 1308, 1307, 1306, 1305, 1304, 1303, 1302, 1301, 1224, 1221, 1218]
-        if assist_avatar_list:
-            for avatar in assist_avatar_list:
-                if avatar.get('avatarId') and avatar.get('avatarId') in avatarIdList:
-                    remark += f"{avatar.get('avatarId')}|{avatar.get('rank') or 0}|{avatar.get('equipment').get('tid') if avatar.get('equipment') else ''}#"
-        if avatar_detail_list:
-            for avatar in avatar_detail_list:
-                if avatar.get('avatarId') and str(avatar.get('avatarId')) not in remark and avatar.get('avatarId') in avatarIdList:
-                    remark += f"{avatar.get('avatarId')}|{avatar.get('rank') or 0}|{avatar.get('equipment').get('tid') if avatar.get('equipment') else ''}#"
-        return remark
-
-    def create_dict_from_db(self, exist):
-        return {
-            'platform': exist[2], 'signature': exist[1], 'nickname': exist[3], 'level': exist[4],
-            'friendCount': exist[5], 'maxRogueChallengeScore': exist[6], 'achievementCount': exist[7],
-            'equipmentCount': exist[8], 'avatarCount': exist[9], 'headIcon': exist[10], 'relicCount': exist[11],
-            'bookCount': exist[12], 'musicCount': exist[13]
-        }
-
-    def create_dict_from_response(self, platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount):
-        return {
-            'platform': platform, 'signature': signature, 'nickname': nickname, 'level': level,
-            'friendCount': friendCount, 'maxRogueChallengeScore': maxRogueChallengeScore, 'achievementCount': achievementCount,
-            'equipmentCount': equipmentCount, 'avatarCount': avatarCount, 'headIcon': headIcon, 'relicCount': relicCount, 
-            'bookCount': bookCount, 'musicCount': musicCount
-        }
-    
-    @contextmanager
-    def get_cursor(self, db):
-        cursor = db.cursor()
-        try:
-            yield cursor
-        finally:
-            cursor.close()
     
     def set_interrupted(self, interrupted):
         self.interrupted = interrupted

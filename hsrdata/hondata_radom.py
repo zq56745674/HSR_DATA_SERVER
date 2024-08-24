@@ -138,7 +138,7 @@ def main():
     counter = 0
     i = 0
 
-    while i < 2000:
+    while i < 4000:
         # 国服
         randomNum = random.randint(1, 57150000) + 100000009
         # B服
@@ -201,7 +201,7 @@ def main():
             db.commit()
 
         # 随机延迟0.7到0.8秒
-        random_delay = random.uniform(1.1, 1.2)
+        random_delay = random.uniform(1.2, 1.3)
         # print(f"随机延迟 {random_delay} 秒...")
         time.sleep(random_delay)
     

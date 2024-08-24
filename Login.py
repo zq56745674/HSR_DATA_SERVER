@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
 from PySide6.QtGui import QIcon
 from Login_ui import Ui_Form
-import pymysql
+from dao import hsr_mapper
 import logging
 import os
 
@@ -17,18 +17,6 @@ class MyWindow(QWidget, Ui_Form):
         
     def bind(self):
         self.pushButton.clicked.connect(self.login_function)
-
-    def get_database_connection(self, dbhost, dbuser, dbpass, dbname):
-        try:
-            if dbpass == "" or dbpass == None:
-                db = pymysql.connect(host=dbhost, user=dbuser, database=dbname)
-            else:
-                db = pymysql.connect(host=dbhost, user=dbuser, password=dbpass, database=dbname)
-            logging.info("数据库连接成功")
-            return db
-        except pymysql.Error as e:
-            logging.error("数据库连接失败：" + str(e))
-            return None
     
     def login_function(self):
         # 获取文本框的内容
@@ -37,7 +25,7 @@ class MyWindow(QWidget, Ui_Form):
         password = self.lineEdit_3.text()
         dbname = self.lineEdit_4.text()
         logging.info("host: %s, username: %s, password: %s, dbname: %s", host, username, password, dbname)
-        self.db = self.get_database_connection(host, username, password, dbname)
+        self.db = hsr_mapper.get_database_connection(host, username, password, dbname)
         if self.db == None:
             # 弹窗提示
             msg_box = QMessageBox()
