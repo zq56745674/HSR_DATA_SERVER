@@ -172,4 +172,4 @@ def execute_zzz_file(file):
     df1.to_excel(file.replace('.csv', '_output.xlsx'), index=False)
 
 if __name__ == "__main__":
-    execute_zzz_file("D:\\ZZZPIC\\[OCR]_2024-08-20_20240820_0707.csv")
+    execute_zzz_file("D:\\ZZZPIC\\[OCR]_2024-08-25_20240825_1153.csv")

@@ -2,18 +2,15 @@ from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIntValidator
 from HSRMain_ui import Ui_MainWindow
+from zipfile import BadZipFile
+from util import baidu_translate, hsr_data_util, qianfan_chat, zzz_data_exe
+from dao import hsr_mapper
 import requests
 import pandas as pd
 import random
 import time
 import logging
 import os
-from zipfile import BadZipFile
-from util import baidu_translate
-from util import qianfan_chat
-from util import hsr_data_util
-from dao import hsr_mapper
-import ZZZDataExe
 
 # 设置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -39,8 +36,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.bind()
         
     def bind(self):
-        # 菜单栏
         self.bind_actions([
+            # 菜单栏
             (self.actionLogin, self.show_login),
             (self.actionExit, self.close),
             (self.actionAqua, lambda: self.toggle_theme('Aqua')),
@@ -48,26 +45,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             (self.actionNeonButtons, lambda: self.toggle_theme('NeonButtons')),
             (self.actionUbuntu, lambda: self.toggle_theme('Ubuntu'))
         ])
-        # tab1按钮
         self.bind_buttons([
+            # tab1按钮
             (self.fileButton, lambda: self.upload_file(1)),
             (self.fileExeButton, self.execute_file),
             (self.randomUidButton, self.random_uid),
             (self.interruptButton, self.interrupt_func),
-            (self.continueButton, self.continue_func)
-        ])
-        # tab2按钮
-        self.bind_buttons([
+            (self.continueButton, self.continue_func),
+            # tab2按钮
             (self.fileButton_2, lambda: self.upload_file(2)),
-            (self.fileZZZExeButton, self.execute_zzz_file)
-        ])
-        # tab3按钮
-        self.bind_buttons([
+            (self.fileZZZExeButton, self.execute_zzz_file),
+            # tab3按钮
             (self.translateButton, self.translate_text),
-            (self.sendAIButton, self.send_ai_text)
+            (self.sendAIButton, self.send_ai_text),
         ])
-        # 单选按钮
         self.bind_radio_buttons([
+            # 单选按钮
             self.radioButton_cn,
             self.radioButton_b,
             self.radioButton_ya,
@@ -127,11 +120,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     
     def interrupt_func(self):
         logging.info("中断")
-        self.interrupted = True  # 设置标志变量为 True
+        self.interrupted = True # 设置标志变量为 True
         if hasattr(self, 'thread') and self.thread.isRunning():
-            self.thread.set_interrupted(True)  # 调用线程的中断方法
-        # 将按钮设置为不可用
-        self.set_buttons_enabled(True)
+            self.thread.set_interrupted(True) # 调用线程的中断方法
+        self.set_buttons_enabled(True) # 将按钮设置为不可用
     
     def continue_func(self):
         logging.info("继续")
@@ -151,7 +143,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.show_error_message("未选择文件")
             return
         try:
-            ZZZDataExe.execute_zzz_file(file)
+            zzz_data_exe.execute_zzz_file(file)
             logging.info("文件处理完成")
             QMessageBox.information(self, "完成", "文件处理完成")
         except Exception as e:
@@ -239,7 +231,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def upload_file(self, tab):
         default_path = os.path.expanduser("~/Desktop")  # 使用 os.path.expanduser 获取桌面路径
-        # 打开文件选择对话框，并限制文件后缀为 .xlsx, .xls 和 .csv
         file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", default_path, "表格文件 (*.xlsx *.xls *.csv);;所有文件 (*)")
         if tab == 1:
             self.fileLabel.setText(file_path if file_path else "未选择文件")
@@ -269,10 +260,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             event.ignore()
 
     def closeEvent(self, event):
-        # 从上一个页面传递过来的数据库连接
-        if self.db:
-            self.db.close()
-            logging.info("数据库连接已关闭")
+        hsr_mapper.close_database_connection(self.db)
         event.accept()
     
     def set_int_validator(self):
@@ -291,11 +279,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_buttons_enabled(self, enabled):
         # 按钮列表
         buttons = [
-            self.fileExeButton,
-            self.randomUidButton,
-            self.continueButton
+            self.fileExeButton, self.randomUidButton, self.continueButton
         ]
-        
+        # 设置按钮的启用状态
+        for button in buttons:
+            button.setEnabled(enabled)
         # QLineEdit 列表
         line_edits = [
             self.minUidEdit_cn, self.maxUidEdit_cn,
@@ -305,15 +293,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.minUidEdit_mei, self.maxUidEdit_mei,
             self.minUidEdit_gat, self.maxUidEdit_gat
         ]
-        
-        # 设置按钮的启用状态
-        for button in buttons:
-            button.setEnabled(enabled)
-        
         # 设置 QLineEdit 的启用状态
         for line_edit in line_edits:
             line_edit.setEnabled(enabled)
-
 
 class ExecuteFileThread(QThread):
     progress = Signal(int)
@@ -354,126 +336,128 @@ class ExecuteFileThread(QThread):
             method()
     
     def send_ai_text(self):
-        text = self.fromText
-        if not text:
+        if not self.fromText:
             return
         try:
-            result = qianfan_chat.QianFanChat().chat(text)
+            result = qianfan_chat.QianFanChat().chat(self.fromText)
             self.info_view.emit(result, "toTextBrowser_2")
         except Exception as e:
             self.error_occurred.emit(f"send_ai_text error: {str(e)}", 0)
 
     def translate_text(self):
-        text = self.fromText
-        if not text:
+        if not self.fromText:
             return
         try:
-            result = baidu_translate.BaiDuFanyi().BdTrans(text, self.fromLang, self.toLang)
+            result = baidu_translate.BaiDuFanyi().BdTrans(self.fromText, self.fromLang, self.toLang)
             self.info_view.emit(result, "toTextBrowser")
         except Exception as e:
             self.error_occurred.emit(f"translate_text error: {str(e)}", 0)
-        
+
+    def handle_interruption(self, index):
+        logging.info("处理文件被中断")
+        self.error_occurred.emit("处理文件被中断", index)
+
+    def handle_loop_limit(self, rest_time):
+        logging.info(f"已达到循环次数限制，休息 {rest_time} 秒")
+        self.info_view.emit(f"已达到循环次数限制，休息 {rest_time} 秒", 'infoBrowser')
+        time.sleep(rest_time)
+
+    def process_request(self, index, url, headers, table_name, uid, not_found_count=None):
+        logging.info(f"i {index} url: {url}")
+        self.info_view.emit(f"i {index} url: {url}", 'infoBrowser')
+        response = requests.get(url, headers=headers, timeout=5)
+        if response.status_code == 200:
+            self.handle_successful_response(response, table_name, uid)
+        elif response.status_code == 404 and not not_found_count:
+            self.handle_not_found_response(response, uid, table_name, not_found_count)
+        else:
+            self.handle_failed_response(response, uid)
+
+    def handle_successful_response(self, response, table_name, uid):
+        data = response.json()
+        detail_info = data.get("detailInfo")
+        record_info = detail_info.get("recordInfo")
+        assist_avatar_list = detail_info.get("assistAvatarList")
+        avatar_detail_list = detail_info.get("avatarDetailList")
+        uid = int(detail_info.get("uid"))
+        platform = detail_info.get("platform")
+        signature = detail_info.get("signature")
+        nickname = detail_info.get("nickname")
+        level = detail_info.get("level")
+        friendCount = detail_info.get("friendCount")
+        maxRogueChallengeScore = record_info.get("maxRogueChallengeScore")
+        achievementCount = record_info.get("achievementCount")
+        equipmentCount = record_info.get("equipmentCount")
+        avatarCount = record_info.get("avatarCount")
+        bookCount = record_info.get("bookCount")
+        musicCount = record_info.get("musicCount")
+        relicCount = record_info.get("relicCount")
+        headIcon = detail_info.get("headIcon")
+        remark = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
+        exist = hsr_mapper.get_user_info_by_uid(self.db, uid, table_name)
+        if exist:
+            dict1 = hsr_data_util.create_dict_from_db(exist)
+            dict2 = hsr_data_util.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
+            result = hsr_data_util.print_dict_differences(dict1, dict2)
+            if result:
+                hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, str(result[0]), str(result[1]))
+        else:
+            hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
+
+    def handle_not_found_response(self, response, uid, table_name, not_found_count):
+        not_found_count += 1
+        logging.info(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
+        self.info_view.emit(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}", 'infoBrowser')
+        hsr_mapper.log_request_failure(self.db, uid, response.status_code, table_name)
+
+    def handle_failed_response(self, response, uid):
+        logging.error(f"Error: {response.status_code} for uid: {uid}")
+        self.info_view.emit(f"Error: {response.status_code} for uid: {uid}", 'infoBrowser')
+        hsr_mapper.log_request_failure(self.db, uid, response.status_code, None, response.text)
+
+    def handle_request_exception(self, e, uid):
+        logging.error(f"请求出错：{e} for uid: {uid}")
+        self.info_view.emit(f"请求出错：{e} for uid: {uid}", 'infoBrowser')
+        hsr_mapper.log_request_failure(self.db, uid, 500, None, str(e))
+
+    def update_progress(self, index, maxLen):
+        progress = int((index) / maxLen * 100)
+        progress_info = f"{index}/{maxLen}"
+        remaining_time = self.calculate_remaining_time(index, maxLen)
+        self.progress_updated.emit(progress, progress_info, remaining_time)
+
     def random_uid(self):
         not_found_count = 0
         self.start_time = time.time()
         endpoint = "https://api.mihomo.me/sr_info/"
-        user_agents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-        ]
-        selected_user_agent = user_agents[0]
         loop_limit = 70
         rest_time = 5
         counter = 0
-        i = 0
         maxLen = int(self.maxLen)
-        max_uid = max_uid = self.get_max_uid() if self.maxEditUid == 0 else self.maxEditUid
+        max_uid = self.get_max_uid() if self.maxEditUid == 0 else self.maxEditUid
         min_uid = self.get_min_uid()
 
         for i in range(1, maxLen):
             if self.interrupted:
-                logging.info("处理文件被中断")
-                self.error_occurred.emit("处理文件被中断", i)
+                self.handle_interruption(i)
                 return
-            
-            # 重置计数器，如果已经达到循环次数限制
+
             if counter >= loop_limit:
-                logging.info(f"已达到循环次数限制，休息 {rest_time} 秒....................................")
-                self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................", 'infoBrowser')
-                counter = 0  # 重置计数器
-                time.sleep(rest_time)  # 休息rest_time秒
+                self.handle_loop_limit(rest_time)
+                counter = 0
                 
-            randomNum = random.randint(self.minEditUid, max_uid) + min_uid
-            uid = str(randomNum)
+            uid = str(random.randint(self.minEditUid, max_uid) + min_uid)
             url = endpoint + uid
             table_name = self.get_table_name()
-            # 发送GET请求
-            headers = {"User-Agent": selected_user_agent}
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"}
             try:
-                logging.info(f"i {i} url: {url}")
-                self.info_view.emit(f" i {i} url: {url}", 'infoBrowser')
-                response = requests.get(url, headers=headers, timeout=5)  # 设置请求超时时间
-                if response.status_code == 200:
-                    # 将JSON数据保存到文件
-                    data = response.json()
-                    detail_info = data.get("detailInfo")
-                    record_info = detail_info.get("recordInfo")
-                    assist_avatar_list = detail_info.get("assistAvatarList")
-                    avatar_detail_list = detail_info.get("avatarDetailList")
-                    uid = int(detail_info.get("uid"))
-                    platform = detail_info.get("platform")
-                    signature = detail_info.get("signature")
-                    nickname = detail_info.get("nickname")
-                    level = detail_info.get("level")
-                    friendCount = detail_info.get("friendCount")
-                    maxRogueChallengeScore = record_info.get("maxRogueChallengeScore")
-                    achievementCount = record_info.get("achievementCount")
-                    equipmentCount = record_info.get("equipmentCount")
-                    avatarCount = record_info.get("avatarCount")
-                    bookCount = record_info.get("bookCount")
-                    musicCount = record_info.get("musicCount")
-                    relicCount = record_info.get("relicCount") # 仪器数量
-                    headIcon = detail_info.get("headIcon")
-                    remark = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
-
-                    exist = hsr_mapper.get_user_info_by_uid(self.db, uid, table_name)
-                    if exist:
-                        dict1 = hsr_data_util.create_dict_from_db(exist)
-                        dict2 = hsr_data_util.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
-                        result = hsr_data_util.print_dict_differences(dict1, dict2)
-                        if result:
-                            hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
-                            hsr_mapper.insert_user_info_upd_record(self.db, uid, str(result[0]), str(result[1]))
-                    else:
-                        hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
-
-                elif response.status_code == 404:
-                    not_found_count += 1
-                    logging.info(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
-                    self.info_view.emit(f" 请求失败，状态码：{response.status_code}，404计数：{not_found_count}", 'infoBrowser')
-                    hsr_mapper.log_request_failure(self.db, uid, response.status_code, table_name)
-                else:
-                    # 请求失败，打印错误信息
-                    logging.error(f"Error: {response.status_code} for uid: {uid}")
-                    self.info_view.emit(f" Error: {response.status_code} for uid: {uid}", 'infoBrowser')
-                    hsr_mapper.log_request_failure(self.db, uid, response.status_code, None, response.text)
-
+                self.process_request(i, url, headers, table_name, uid, not_found_count)
             except requests.exceptions.RequestException as e:
-                # 请求异常，打印错误信息
-                logging.error(f"请求出错：{e} for uid: {uid}")
-                self.info_view.emit(f" 请求出错：{e} for uid: {uid}", 'infoBrowser')
-                hsr_mapper.log_request_failure(self.db, uid, 500, None, str(e))
+                self.handle_request_exception(e, uid)
             
-            # 更新进度条
-            progress = int((i) / maxLen * 100)
-            progress_info = f"{i}/{maxLen}"
-            # 计算并发送剩余时间
-            remaining_time = self.calculate_remaining_time(i, maxLen)
-            self.progress_updated.emit(progress, progress_info, remaining_time)
-
+            self.update_progress(i, maxLen) # 更新进度条
             counter += 1
-            # 随机延迟
-            random_delay = random.uniform(0.7, 0.8)
-            time.sleep(random_delay)
+            time.sleep(random.uniform(0.7, 0.8))
 
         self.finished_info.emit()
 
@@ -502,14 +486,8 @@ class ExecuteFileThread(QThread):
         self.serverName = self.determine_server_name(uid)
         
         endpoint = "https://api.mihomo.me/sr_info/"
-        user_agents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-        ]
-        selected_user_agent = user_agents[0]
-        # 设置循环次数和休息时间
         loop_limit = 70
-        rest_time = 5  # 休息时间，单位为秒
-        # 计数器
+        rest_time = 5
         counter = 0
         total_rows = len(df)
         
@@ -518,92 +496,30 @@ class ExecuteFileThread(QThread):
                 continue  # 跳过初始索引之前的行
 
             if self.interrupted:
-                logging.info("处理文件被中断")
-                self.error_occurred.emit("处理文件被中断", index)
+                self.handle_interruption(index)
                 return
             # 重置计数器，如果已经达到循环次数限制
             if counter >= loop_limit:
-                logging.info(f"已达到循环次数限制，休息 {rest_time} 秒....................................")
-                self.info_view.emit(f" 已达到循环次数限制，休息 {rest_time} 秒....................................", 'infoBrowser')
-                counter = 0  # 重置计数器
-                time.sleep(rest_time)  # 休息10秒
+                self.handle_loop_limit(rest_time)
+                counter = 0
 
-            # 增加计数器
-            counter += 1
-
-            # 获得uid
-            uid = str(row['uid'])  # 假设'uid'是Excel文件第一列的列名
-            url = f"{endpoint}{uid}"
+            uid = str(row['uid']) # 获得uid
+            url = endpoint + uid
             table_name = self.get_table_name()
-            
-            # 发送GET请求
-            headers = {"User-Agent": selected_user_agent}
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"}
             try:
-                logging.info(f"i {index} url: {url}")
-                self.info_view.emit(f" i {index} url: {url}", 'infoBrowser')
-                response = requests.get(url, headers=headers, timeout=5)  # 设置请求超时时间
-                if response.status_code == 200:
-                    # 将JSON数据保存到文件
-                    data = response.json()
-                    detail_info = data.get("detailInfo")
-                    record_info = detail_info.get("recordInfo")
-                    assist_avatar_list = detail_info.get("assistAvatarList")
-                    avatar_detail_list = detail_info.get("avatarDetailList")
-                    uid = int(detail_info.get("uid"))
-                    platform = detail_info.get("platform")
-                    signature = detail_info.get("signature")
-                    nickname = detail_info.get("nickname")
-                    level = detail_info.get("level")
-                    friendCount = detail_info.get("friendCount")
-                    maxRogueChallengeScore = record_info.get("maxRogueChallengeScore")
-                    achievementCount = record_info.get("achievementCount")
-                    equipmentCount = record_info.get("equipmentCount")
-                    avatarCount = record_info.get("avatarCount")
-                    bookCount = record_info.get("bookCount")
-                    musicCount = record_info.get("musicCount")
-                    relicCount = record_info.get("relicCount") # 仪器数量
-                    headIcon = detail_info.get("headIcon")
-                    remark = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
-
-                    exist = hsr_mapper.get_user_info_by_uid(self.db, uid, table_name)
-                    if exist:
-                        dict1 = hsr_data_util.create_dict_from_db(exist)
-                        dict2 = hsr_data_util.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
-                        result = hsr_data_util.print_dict_differences(dict1, dict2)
-                        if result:
-                            hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
-                            hsr_mapper.insert_user_info_upd_record(self.db, uid, str(result[0]), str(result[1]))
-                    else:
-                        hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)                   
-                else:
-                    # 请求失败，打印错误信息
-                    logging.error(f"Error: {response.status_code} for uid: {uid}")
-                    self.info_view.emit(f" Error: {response.status_code} for uid: {uid}", 'infoBrowser')
-                    hsr_mapper.log_request_failure(self.db, uid, response.status_code, None, response.reason)
+                self.process_request(index, url, headers, table_name, uid)
             except requests.exceptions.RequestException as e:
-                # 请求异常，打印错误信息
-                logging.error(f"请求出错：{e} for uid: {uid}")
-                self.info_view.emit(f" 请求出错：{e} for uid: {uid}", 'infoBrowser')
-                hsr_mapper.log_request_failure(self.db, uid, 500, None, str(e))
+                self.handle_request_exception(e, uid)
             
-            # 更新进度条
-            progress = int((index + 1) / total_rows * 100)
-            progress_info = f"{index + 1}/{total_rows}"
-            # 计算并发送剩余时间
-            remaining_time = self.calculate_remaining_time(index, total_rows)
-            self.progress_updated.emit(progress, progress_info, remaining_time)
-
-            # 随机延迟
-            random_delay = random.uniform(0.7, 0.8)
-            time.sleep(random_delay)
+            self.update_progress(index, total_rows) # 更新进度条
+            counter += 1
+            time.sleep(random.uniform(0.7, 0.8))
         
         self.finished_info.emit()
 
     def get_max_uid(self):
-        max_uid_str = str(self.maxUid)  # 将 self.maxUid 转换为字符串
-        if len(max_uid_str) > 1:
-            max_uid_str = max_uid_str[1:]  # 截掉首位数字
-        max_uid_str = max_uid_str.lstrip('0')  # 去掉开头的所有 '0'
+        max_uid_str = str(self.maxUid).lstrip('0')[1:]  # 去掉首位数字和开头的所有 '0'
         return int(max_uid_str) if max_uid_str else 0  # 转换回整数，如果字符串为空则设为 0
     
     def get_min_uid(self):
@@ -644,12 +560,9 @@ class ExecuteFileThread(QThread):
 
     def get_table_name(self):
         server_table_map = {
-            'cn': 'sr_user_info',
-            'b': 'sr_user_info_b',
-            'ya': 'sr_user_info_asia',
-            'ou': 'sr_user_info_europe',
-            'mei': 'sr_user_info_america',
-            'gat': 'sr_user_info_cht'
+            'cn': 'sr_user_info', 'b': 'sr_user_info_b',
+            'ya': 'sr_user_info_asia', 'ou': 'sr_user_info_europe',
+            'mei': 'sr_user_info_america', 'gat': 'sr_user_info_cht'
         }
         return server_table_map.get(self.serverName, 'sr_user_info_default')
     
