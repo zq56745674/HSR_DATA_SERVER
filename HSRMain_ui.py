@@ -17,16 +17,17 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHBoxLayout,
-    QLabel, QLineEdit, QMainWindow, QMenu,
-    QMenuBar, QPlainTextEdit, QProgressBar, QPushButton,
-    QRadioButton, QSizePolicy, QSpacerItem, QStatusBar,
-    QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
+    QHeaderView, QLabel, QLineEdit, QMainWindow,
+    QMenu, QMenuBar, QPlainTextEdit, QProgressBar,
+    QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
+    QStatusBar, QTabWidget, QTableWidget, QTableWidgetItem,
+    QTextBrowser, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(821, 665)
+        MainWindow.resize(1007, 687)
         self.actionLogin = QAction(MainWindow)
         self.actionLogin.setObjectName(u"actionLogin")
         self.actionExit = QAction(MainWindow)
@@ -45,7 +46,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.widget = QWidget(self.centralwidget)
         self.widget.setObjectName(u"widget")
-        self.widget.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
+        self.widget.setContextMenuPolicy(Qt.NoContextMenu)
         self.verticalLayout_3 = QVBoxLayout(self.widget)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.tabWidget = QTabWidget(self.widget)
@@ -80,7 +81,7 @@ class Ui_MainWindow(object):
 
         self.maxUidLabel = QLabel(self.tabWidgetPage1)
         self.maxUidLabel.setObjectName(u"maxUidLabel")
-        self.maxUidLabel.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.maxUidLabel.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_8.addWidget(self.maxUidLabel)
 
@@ -105,7 +106,7 @@ class Ui_MainWindow(object):
 
         self.label_cn = QLabel(self.groupBox)
         self.label_cn.setObjectName(u"label_cn")
-        self.label_cn.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.label_cn.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_2.addWidget(self.label_cn)
 
@@ -137,7 +138,7 @@ class Ui_MainWindow(object):
 
         self.label_b = QLabel(self.groupBox)
         self.label_b.setObjectName(u"label_b")
-        self.label_b.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.label_b.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_3.addWidget(self.label_b)
 
@@ -169,7 +170,7 @@ class Ui_MainWindow(object):
 
         self.label_ya = QLabel(self.groupBox)
         self.label_ya.setObjectName(u"label_ya")
-        self.label_ya.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.label_ya.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_4.addWidget(self.label_ya)
 
@@ -201,7 +202,7 @@ class Ui_MainWindow(object):
 
         self.label_ou = QLabel(self.groupBox)
         self.label_ou.setObjectName(u"label_ou")
-        self.label_ou.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.label_ou.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_5.addWidget(self.label_ou)
 
@@ -233,7 +234,7 @@ class Ui_MainWindow(object):
 
         self.label_mei = QLabel(self.groupBox)
         self.label_mei.setObjectName(u"label_mei")
-        self.label_mei.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.label_mei.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_6.addWidget(self.label_mei)
 
@@ -265,7 +266,7 @@ class Ui_MainWindow(object):
 
         self.label_gat = QLabel(self.groupBox)
         self.label_gat.setObjectName(u"label_gat")
-        self.label_gat.setTextInteractionFlags(Qt.TextInteractionFlag.LinksAccessibleByMouse|Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.label_gat.setTextInteractionFlags(Qt.NoTextInteraction)
 
         self.horizontalLayout_7.addWidget(self.label_gat)
 
@@ -325,7 +326,6 @@ class Ui_MainWindow(object):
 
         self.progressLabel = QLabel(self.tabWidgetPage1)
         self.progressLabel.setObjectName(u"progressLabel")
-        self.progressLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.progressLabel.setWordWrap(False)
         self.progressLabel.setMargin(0)
 
@@ -333,7 +333,6 @@ class Ui_MainWindow(object):
 
         self.timeLabel = QLabel(self.tabWidgetPage1)
         self.timeLabel.setObjectName(u"timeLabel")
-        self.timeLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.horizontalLayout_11.addWidget(self.timeLabel)
 
@@ -533,6 +532,56 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addLayout(self.horizontalLayout_15)
 
         self.tabWidget.addTab(self.tabWidgetPage3, "")
+        self.tabWidgetPage4 = QWidget()
+        self.tabWidgetPage4.setObjectName(u"tabWidgetPage4")
+        self.verticalLayout_8 = QVBoxLayout(self.tabWidgetPage4)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.verticalLayout_7 = QVBoxLayout()
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.horizontalLayout_19 = QHBoxLayout()
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.fileButton_3 = QPushButton(self.tabWidgetPage4)
+        self.fileButton_3.setObjectName(u"fileButton_3")
+        self.fileButton_3.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_19.addWidget(self.fileButton_3)
+
+        self.fileLabel_3 = QLabel(self.tabWidgetPage4)
+        self.fileLabel_3.setObjectName(u"fileLabel_3")
+
+        self.horizontalLayout_19.addWidget(self.fileLabel_3)
+
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_19.addItem(self.horizontalSpacer_4)
+
+        self.horizontalLayout_19.setStretch(0, 1)
+        self.horizontalLayout_19.setStretch(1, 2)
+        self.horizontalLayout_19.setStretch(2, 2)
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout_19)
+
+        self.horizontalLayout_18 = QHBoxLayout()
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.tableWidget = QTableWidget(self.tabWidgetPage4)
+        self.tableWidget.setObjectName(u"tableWidget")
+
+        self.horizontalLayout_18.addWidget(self.tableWidget)
+
+        self.widget_2 = QWidget(self.tabWidgetPage4)
+        self.widget_2.setObjectName(u"widget_2")
+
+        self.horizontalLayout_18.addWidget(self.widget_2)
+
+        self.horizontalLayout_18.setStretch(0, 1)
+        self.horizontalLayout_18.setStretch(1, 2)
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout_18)
+
+
+        self.verticalLayout_8.addLayout(self.verticalLayout_7)
+
+        self.tabWidget.addTab(self.tabWidgetPage4, "")
 
         self.verticalLayout_3.addWidget(self.tabWidget)
 
@@ -542,7 +591,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 821, 33))
+        self.menubar.setGeometry(QRect(0, 0, 1007, 26))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu.setMinimumSize(QSize(0, 0))
@@ -624,11 +673,8 @@ class Ui_MainWindow(object):
         self.maxUidEdit_gat.setText(QCoreApplication.translate("MainWindow", u"100000", None))
         self.maxUidEdit_gat.setPlaceholderText(QCoreApplication.translate("MainWindow", u"\u8bf7\u8f93\u5165...", None))
         self.infoBrowser.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"hr { height: 1px; border-width: 0; }\n"
-"li.unchecked::marker { content: \"\\2610\"; }\n"
-"li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Arial'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
         self.progressLabel.setText(QCoreApplication.translate("MainWindow", u"0/0", None))
@@ -656,6 +702,9 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"AI\u5bf9\u8bdd", None))
         self.sendAIButton.setText(QCoreApplication.translate("MainWindow", u"\u53d1\u9001", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage3), QCoreApplication.translate("MainWindow", u"\u767e\u5ea6API", None))
+        self.fileButton_3.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4f20\u6587\u4ef6", None))
+        self.fileLabel_3.setText(QCoreApplication.translate("MainWindow", u"\u672a\u9009\u62e9\u6587\u4ef6", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage4), QCoreApplication.translate("MainWindow", u"\u6570\u636e\u5206\u6790", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u83dc\u5355", None))
         self.menuToggle.setTitle(QCoreApplication.translate("MainWindow", u"Theme", None))
     # retranslateUi
