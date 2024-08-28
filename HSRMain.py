@@ -1,6 +1,8 @@
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QTableWidgetItem, QHBoxLayout, QWidget
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIntValidator
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from HSRMain_ui import Ui_MainWindow
 from zipfile import BadZipFile
 from util import baidu_translate, hsr_data_util, qianfan_chat, zzz_data_exe
@@ -58,6 +60,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # tab3按钮
             (self.translateButton, self.translate_text),
             (self.sendAIButton, self.send_ai_text),
+            # tab4按钮
+            (self.fileButton_3, lambda: self.upload_file(3)),
+            (self.dataAnalysisButton, self.data_analysis)
         ])
         self.bind_radio_buttons([
             # 单选按钮
@@ -80,6 +85,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def bind_radio_buttons(self, radio_buttons):
         for radio_button in radio_buttons:
             radio_button.clicked.connect(self.radio_button_clicked)
+    
+    def data_analysis(self):
+        file = self.fileLabel_3.text()
+        if file == "未选择文件":
+            self.show_error_message("未选择文件")
+            return
+        
+        self.central_layout = QHBoxLayout()
+        self.widget_2.setLayout(self.central_layout)
+
+        # 创建一个FigureCanvas来显示图表
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.central_layout.addWidget(self.canvas)
+        df = pd.read_csv(file, encoding='GBK')
+        # df转换为字典列表
+        self.data = df.to_dict(orient='records')
+        
+        self.generate_table(self.data)
+        self.plot_graph(self.data)
+    
+    def generate_table(self, data):
+        # 设置表格行数和列数
+        self.tableWidget.setRowCount(len(data))
+        self.tableWidget.setColumnCount(len(data[0]))
+
+        # 设置表头
+        self.tableWidget.setHorizontalHeaderLabels(data[0].keys())
+
+        # 填充表格数据
+        for row_index, row_data in enumerate(data):
+            for col_index, (key, value) in enumerate(row_data.items()):
+                self.tableWidget.setItem(row_index, col_index, QTableWidgetItem(str(value)))
+
+    def plot_graph(self, data):
+        # 清除之前的图表
+        self.figure.clear()
+
+        # 创建一个新的子图
+        ax = self.figure.add_subplot(111)
+
+        # 提取数据
+        dates = [row["DATE"] for row in data]
+        sorts = [row["GS"] for row in data]
+
+        # 绘制折线图
+        ax.plot(dates, sorts, marker='o')
+
+        # 设置图表标题和标签
+        # ax.set_title("Scores by Name")
+        ax.set_xlabel("日期")
+        ax.set_ylabel("排名")
+
+        # 刷新图表
+        self.canvas.draw()
     
     def send_ai_text(self):
         text = self.fromTextEdit_2.toPlainText()
@@ -232,10 +292,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def upload_file(self, tab):
         default_path = os.path.expanduser("~/Desktop")  # 使用 os.path.expanduser 获取桌面路径
         file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", default_path, "表格文件 (*.xlsx *.xls *.csv);;所有文件 (*)")
-        if tab == 1:
-            self.fileLabel.setText(file_path if file_path else "未选择文件")
-        elif tab == 2:
-            self.fileLabel_2.setText(file_path if file_path else "未选择文件")
+        file_labels = {
+            1: self.fileLabel,  2: self.fileLabel_2,
+            3: self.fileLabel_3
+        }
+        if tab in file_labels:
+            file_labels[tab].setText(file_path if file_path else "未选择文件")
 
     def dragEnterEvent(self, event):
         # 检查拖拽的文件类型

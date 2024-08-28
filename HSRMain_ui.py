@@ -75,7 +75,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addLayout(self.horizontalLayout)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer)
 
@@ -456,7 +456,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_16.addWidget(self.toComboBox)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.horizontalLayout_16.addItem(self.horizontalSpacer_2)
 
@@ -500,7 +500,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_17.addWidget(self.label_2)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.horizontalLayout_17.addItem(self.horizontalSpacer_3)
 
@@ -510,6 +510,8 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_17.addWidget(self.sendAIButton)
 
+        self.horizontalLayout_17.setStretch(0, 1)
+        self.horizontalLayout_17.setStretch(1, 2)
 
         self.verticalLayout_6.addLayout(self.horizontalLayout_17)
 
@@ -554,6 +556,12 @@ class Ui_MainWindow(object):
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_19.addItem(self.horizontalSpacer_4)
+
+        self.dataAnalysisButton = QPushButton(self.tabWidgetPage4)
+        self.dataAnalysisButton.setObjectName(u"dataAnalysisButton")
+        self.dataAnalysisButton.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_19.addWidget(self.dataAnalysisButton)
 
         self.horizontalLayout_19.setStretch(0, 1)
         self.horizontalLayout_19.setStretch(1, 2)
@@ -704,6 +712,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage3), QCoreApplication.translate("MainWindow", u"\u767e\u5ea6API", None))
         self.fileButton_3.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4f20\u6587\u4ef6", None))
         self.fileLabel_3.setText(QCoreApplication.translate("MainWindow", u"\u672a\u9009\u62e9\u6587\u4ef6", None))
+        self.dataAnalysisButton.setText(QCoreApplication.translate("MainWindow", u"\u6570\u636e\u5904\u7406", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabWidgetPage4), QCoreApplication.translate("MainWindow", u"\u6570\u636e\u5206\u6790", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u83dc\u5355", None))
         self.menuToggle.setTitle(QCoreApplication.translate("MainWindow", u"Theme", None))
