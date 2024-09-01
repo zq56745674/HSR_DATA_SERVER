@@ -140,14 +140,14 @@ def main():
 
     while i < 4000:
         # 国服
-        randomNum = random.randint(1, 57150000) + 100000009
+        randomNum = random.randint(1, 57360000) + 100000009
         # B服
         # randomNum = random.randint(1, 4001000) + 500000001
         # 美服
-        # randomNum = random.randint(1, 20200000) + 600000006
-        # 欧服 19790000
+        # randomNum = random.randint(1, 20280000) + 600000006
+        # 欧服 19870000
         # randomNum = random.randint(2000001, 3000000) + 700000001
-        # 亚服 36060000
+        # 亚服 36200000
         # randomNum = random.randint(1000001, 2000000) + 800000002
         # 港澳台
         # randomNum = random.randint(1, 1098000) + 900000001

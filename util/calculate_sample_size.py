@@ -25,12 +25,12 @@ def finite_population_correction(n, N):
     return math.ceil(n / (1 + (n - 1) / N))
 
 # 示例：95%的置信水平，±5%的误差范围
-sample_size = calculate_sample_size(0.95, 0.001, 0.05)
+sample_size = calculate_sample_size(0.95, 0.05, 0.03)
 print(f"所需的样本量: {sample_size}")
 
 # 2.1亿数据，95%的置信水平，±5%的误差范围
-total_population = 210000000
-sample_size = calculate_sample_size(0.95, 0.001, 0.05)
+total_population = 78400000
+sample_size = calculate_sample_size(0.95, 0.05, 0.03)
 adjusted_sample_size = finite_population_correction(sample_size, total_population)
 print(f"2.1亿数据所需的样本量（有限总体修正后）: {adjusted_sample_size}")
 
@@ -50,11 +50,11 @@ def calculate_confidence_level(n, E, p=0.5):
     return confidence_level
 
 # 总体规模
-N = 212134007
+N = 106000000
 # 样本量
-n = 140000
+n = 1800
 # 样本比例
-p = 0.05
+p = 0.035
 
 # 计算误差范围
 E = calculate_margin_of_error(n, N, p)
