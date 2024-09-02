@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My HTML Page</title>
+</head>
+
+<body>
+    <div id="app">
+        <p>{{ message }}</p>
+    </div>
+
+    <div id="app-2">
+        <span v-bind:title="message">
+            鼠标悬停几秒钟查看此处动态绑定的提示信息！
+        </span>
+        <!-- 简写 -->
+        <span :title="message">
+            鼠标悬停几秒钟查看此处动态绑定的提示信息！
+        </span>
+    </div>
+
+    <div id="app-3">
+        <p v-if="seen">现在你看到我了</p>
+    </div>
+
+    <div id="app-4">
+        <ol>
+            <li v-for="todo in todos">
+                {{ todo.text }}
+            </li>
+        </ol>
+    </div>
+
+    <div id="app-5">
+        <p>{{ message }}</p>
+        <button v-on:click="reverseMessage">逆转消息</button>
+        <!-- 简写 -->
+        <button @click="reverseMessage">逆转消息</button>
+    </div>
+
+    <div id="app-6">
+        <p>{{ message }}</p>
+        <input v-model="message">
+    </div>
+
+    <div id="app-7">
+        <ol>
+            <todo-item v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id"></todo-item>
+        </ol>
+    </div>
+
+    <div id="demo">
+        <input v-model="firstName" type="text">
+        <input v-model="lastName" type="text">
+        <p>{{ fullName }}</p>
+    </div>
+
+    <div class="static" v-bind:class="{ active: isActive, 'text-danger': hasError }">
+        <p>这个对象是静态的</p>
+    </div>
+
+    <div id="classdemo" v-bind:class="classObject">
+        <p>这个对象是动态的</p>
+    </div>
+
+    <div id="iftest">
+        <div v-if="type === 'A'">
+            A
+        </div>
+        <div v-else-if="type === 'B'">
+            B
+        </div>
+        <div v-else-if="type === 'C'">
+            C
+        </div>
+        <div v-else>
+            Not A/B/C
+        </div>
+    </div>
+    
+
+
+    <script src="vue.js"></script>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: 'Hello Vue!'
+            }
+        })
+
+        var app2 = new Vue({
+            el: '#app-2',
+            data: {
+                message: '页面加载于 ' + new Date().toLocaleString()
+            }
+        })
+
+        var app3 = new Vue({
+            el: '#app-3',
+            data: {
+                seen: true
+            }
+        })
+
+        var app4 = new Vue({
+            el: '#app-4',
+            data: {
+                todos: [
+                    { text: '学习 JavaScript' },
+                    { text: '学习 Vue' },
+                    { text: '整个牛项目' }
+                ]
+            }
+        })
+
+        var app5 = new Vue({
+            el: '#app-5',
+            data: {
+                message: 'Hello Vue.js!'
+            },
+            methods: {
+                reverseMessage: function () {
+                    this.message = this.message.split('').reverse().join('')
+                }
+            }
+        })
+
+        var app6 = new Vue({
+            el: '#app-6',
+            data: {
+                message: 'Hello Vue!'
+            }
+        })
+
+        Vue.component('todo-item', {
+            props: ['todo'],
+            template: '<li>{{ todo.text }}</li>'
+        })
+
+        var app7 = new Vue({
+            el: '#app-7',
+            data: {
+                groceryList: [
+                    { id: 0, text: '蔬菜' },
+                    { id: 1, text: '奶酪' },
+                    { id: 2, text: '随便其他什么人吃的东西' }
+                ]
+            }
+        })
+
+        // var demo = new Vue({
+        //     el: '#demo',
+        //     data: {
+        //         firstName: 'Foo',
+        //         lastName: 'Bar'
+        //     },
+        //     computed: {
+        //         fullName: function () {
+        //             return this.firstName + ' ' + this.lastName
+        //         }
+        //     }
+        // })
+
+        var demo = new Vue({
+            el: '#demo',
+            data: {
+                firstName: 'Foo',
+                lastName: 'Bar'
+            },
+            computed: {
+                fullName: {
+                    // getter
+                    get: function () {
+                        return this.firstName + ' ' + this.lastName
+                    },
+                    // setter
+                    set: function (newValue) {
+                        var names = newValue.split(' ')
+                        this.firstName = names[0]
+                        this.lastName = names[names.length - 1]
+                    }
+                }
+            }
+        })
+
+        var vm = new Vue({
+            el: '.static',
+            data: {
+                isActive: true,
+                hasError: false
+            }
+        })
+
+        var classdemo = new Vue({
+            el: '#classdemo',
+            data: {
+                classObject: {
+                    active: true,
+                    'text-danger': false
+                }
+            }
+        })
+
+        var iftest = new Vue({
+            el: '#iftest',
+            data: {
+                type: 'C'
+            }
+        })
+    </script>
+
+</body>
+
+</html>
