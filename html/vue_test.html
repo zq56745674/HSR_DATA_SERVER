@@ -21,7 +21,12 @@
     </div>
 
     <div id="app-3">
+        <!-- v-if通过添加和删除DOM元素来控制显示与隐藏
+            适用于：在运行时很少改变条件时使用 -->
         <p v-if="seen">现在你看到我了</p>
+        <!-- v-show通过style的display: none来控制显示与隐藏
+            适用于：频繁切换显示与隐藏的场景 -->
+        <p v-show="seen">现在你看到我了</p>
     </div>
 
     <div id="app-4">
@@ -77,6 +82,12 @@
         <div v-else>
             Not A/B/C
         </div>
+    </div>
+
+    <div id="ondemo">
+        <button @click="count--">-</button>
+        <span>{{ count }}</span>
+        <button @click="count++">+</button>
     </div>
     
 
@@ -209,6 +220,14 @@
                 type: 'C'
             }
         })
+
+        var ondemo = new Vue({
+            el: '#ondemo',
+            data: {
+                count: 100
+            }
+        })
+
     </script>
 
 </body>
