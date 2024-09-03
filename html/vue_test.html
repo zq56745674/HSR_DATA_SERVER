@@ -3,6 +3,12 @@
 
 <head>
     <title>My HTML Page</title>
+    <style>
+        .responsive-img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 
 <body>
@@ -89,11 +95,33 @@
         <span>{{ count }}</span>
         <button @click="count++">+</button>
     </div>
+
+    <div id="imgdemo">
+        <div>
+            <img :src="imgList[index]" :title="msg" width="1100" height="500" alt="花火" class="responsive-img">
+        </div>
+        <button v-show="index > 0" @click="index--">上一页</button>
+        <button v-show="index < imgList.length - 1" @click="index++">下一页</button>
+    </div>
     
 
 
     <script src="vue.js"></script>
     <script>
+        var imgdemo = new Vue({
+            el: '#imgdemo',
+            data: {
+                index: 0,
+                imgList: [
+                    './img/118204893_p0.jpg', 
+                    './img/118185699_p0_master1200.jpg', 
+                    './img/118185699_p1_master1200.jpg',
+                    './img/118221846_p0_master1200.jpg'
+                ],
+                msg: '花火'
+            }
+        })
+
         var app = new Vue({
             el: '#app',
             data: {
