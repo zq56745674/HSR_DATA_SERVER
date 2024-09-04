@@ -103,18 +103,50 @@
         <button v-show="index > 0" @click="index--">上一页</button>
         <button v-show="index < imgList.length - 1" @click="index++">下一页</button>
     </div>
-    
+
+    <!-- v-for适用对象 -->
+    <div id="vforobj">
+        <ul>
+            <li v-for="value in object">
+                {{ value }}
+            </li>
+        </ul>
+        <ul>
+            <li v-for="(value, key) in object">
+                {{ key }}: {{ value }}
+            </li>
+        </ul>
+        <ul>
+            <li v-for="(value, key, index) in object">
+                {{ index }}. {{ key }}: {{ value }}
+            </li>
+        </ul>
+    </div>
+
 
 
     <script src="vue.js"></script>
     <script>
+        var vforobj = new Vue({
+            el: '#vforobj',
+            data: {
+                object: {
+                    title: 'How to do lists in Vue',
+                    author: 'Jane Doe',
+                    publishedAt: '2016-04-10'
+                }
+            }
+        })
+
+
+
         var imgdemo = new Vue({
             el: '#imgdemo',
             data: {
                 index: 0,
                 imgList: [
-                    './img/118204893_p0.jpg', 
-                    './img/118185699_p0_master1200.jpg', 
+                    './img/118204893_p0.jpg',
+                    './img/118185699_p0_master1200.jpg',
                     './img/118185699_p1_master1200.jpg',
                     './img/118221846_p0_master1200.jpg'
                 ],
