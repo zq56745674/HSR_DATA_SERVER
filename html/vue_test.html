@@ -123,10 +123,25 @@
         </ul>
     </div>
 
+    <div id="eventdemo">
+        <button @click="warn('Form cannot be submitted yet.', $event)">Submit</button>
+    </div>
+
 
 
     <script src="vue.js"></script>
     <script>
+        var eventdemo = new Vue({
+            el: '#eventdemo',
+            methods: {
+                warn: function (message, event) {
+                    // 现在我们可以访问原生事件对象
+                    if (event) event.preventDefault()
+                    alert(message)
+                }
+            }
+        })
+
         var vforobj = new Vue({
             el: '#vforobj',
             data: {
@@ -137,8 +152,6 @@
                 }
             }
         })
-
-
 
         var imgdemo = new Vue({
             el: '#imgdemo',
