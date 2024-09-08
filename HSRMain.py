@@ -430,7 +430,7 @@ class ExecuteFileThread(QThread):
         response = requests.get(url, headers=headers, timeout=5)
         if response.status_code == 200:
             self.handle_successful_response(response, table_name, uid)
-        elif response.status_code == 404 and not not_found_count:
+        elif response.status_code == 404 and not_found_count is not None:
             self.handle_not_found_response(response, uid, table_name, not_found_count)
         else:
             self.handle_failed_response(response, uid)

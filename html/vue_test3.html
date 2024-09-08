@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>生命周期</title>
+    <style>
+        .red {
+            color: red;
+        }
+
+        .list-box {
+            width: 500px;
+            margin: 0 auto;
+        }
+
+        .my-form {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 150px;
+        }
+
+        .btn {
+            width: 80px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .table tfoot td {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .echarts-box {
+            width: 500px;
+            height: 300px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h3>{{ title }}</h3>
+        <div>
+            <button @click="count--">-</button>
+            <span>{{ count }}</span>
+            <button @click="count++">+</button>
+        </div>
+
+        <div>
+            <input type="text" v-model="words" id="inp">
+            <button>搜索</button>
+        </div>
+        <br><br>
+
+        <div class="list-box">
+            <form class="my-form">
+                <input v-model.trim="name" type="text" class="form-control" placeholder="请输入消费名称">
+                <input v-model.number="price" type="text" class="form-control" placeholder="请输入消费名称">
+                <button @click="add" type="button" class="btn btn-primary">添加</button>
+            </form>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>消费名称</th>
+                        <th>价格</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item, index) in list" :key="item.id">
+                        <td>{{ index + 1 }}</td>
+                        <td>{{ item.name }}</td>
+                        <td :class="{ red: item.price >500 }">{{ item.price.toFixed(2) }}</td>
+                        <td><a @click="del(item.id)" href="javascript:;">删除</a></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">消费总计： {{ totalPrices.toFixed(2) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="echarts-box" id="main"></div>
+
+    </div>
+
+    <script src="vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script>
+        const app = new Vue({
+            el: '#app',
+            data: {
+                title: '计数器',
+                count: 0,
+                words: '',
+                list: [],
+                name: '',
+                price: '',
+            },
+            computed: {
+                totalPrices() {
+                    return this.list.reduce((pre, cur) => pre + cur.price, 0)
+                }
+            },
+            methods: {
+                async getList() {
+                    console.log('created', this.count)
+                    // 可以在这里发送请求获取数据
+                    this.count = 100
+                    const res = await axios.get('https://applet-base-api-t.itheima.net/bill', {
+                        params: {
+                            creator: 'momo'
+                        }
+                    })
+                    this.list = res.data.data
+
+                    this.myChart.setOption({
+                        series: [
+                            {
+                                data: this.list.map(item => ({
+                                    name: item.name,
+                                    value: item.price
+                                }))
+                            }
+                        ]
+                    })
+                },
+                async add() {
+                    if (!this.name) {
+                        alert('请输入消费名称')
+                        return
+                    }
+                    if (typeof this.price !== 'number') {
+                        alert('价格必须是数字')
+                        return
+                    }
+                    const res = await axios.post('https://applet-base-api-t.itheima.net/bill', {
+                        name: this.name,
+                        price: this.price,
+                        creator: 'momo'
+                    })
+                    this.getList()
+                    this.name = ''
+                    this.price = ''
+                },
+                async del(id) {
+                    const res = await axios.delete(`https://applet-base-api-t.itheima.net/bill/${id}`)
+                    this.getList()
+                }
+            },
+
+            // 创建阶段
+            beforeCreate() {
+                console.log('beforeCreate')
+            },
+            async created() {
+                console.log('created', this.count)
+                // 可以在这里发送请求获取数据
+                this.count = 100
+                this.getList()
+            },
+            // 挂载阶段
+            beforeMount() {
+                console.log('beforeMount', document.querySelector('h3').innerHTML)
+            },
+            mounted() {
+                console.log('mounted', document.querySelector('h3').innerHTML)
+                // 可以在这里操作DOM
+                // 自动获取焦点
+                document.querySelector('#inp').focus()
+                this.myChart = echarts.init(document.querySelector('#main'))
+                this.myChart.setOption({
+                    // 大标题
+                    title: {
+                        text: '消费统计',
+                        left: 'center'
+                    },
+                    // 提示框
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c} ({d}%)'
+                    },
+                    // 图例
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left'
+                    },
+                    // 数据
+                    series: [
+                        {
+                            name: '消费统计',
+                            type: 'pie',
+                            radius: '55%', // 圆的大小
+                            center: ['50%', '60%'],
+                            data: [],
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                })
+            },
+            // 更新阶段
+            beforeUpdate() {
+                console.log('beforeUpdate', document.querySelector('span').innerHTML)
+            },
+            updated() {
+                console.log('updated', document.querySelector('span').innerHTML)
+            },
+            // 销毁阶段
+            beforeDestroy() {
+                console.log('beforeDestroy')
+                // 可以在这里清除定时器
+            },
+            destroyed() {
+                console.log('destroyed')
+            }
+        })
+
+    </script>
+</body>
+
+</html>
