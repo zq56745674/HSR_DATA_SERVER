@@ -28,7 +28,8 @@ def print_dict_differences(dict1, dict2):
 def generate_remark(assist_avatar_list, avatar_detail_list):
     remark = ""
     # 2.X版本新增的角色
-    avatarIdList = [8005, 8006, 1315, 1314, 1312, 1310, 1309, 1308, 1307, 1306, 1305, 1304, 1303, 1302, 1301, 1224, 1221, 1218]
+    # 1220 飞霄 1222 灵砂 1223 貊泽
+    avatarIdList = [8005, 8006, 1315, 1314, 1312, 1310, 1309, 1308, 1307, 1306, 1305, 1304, 1303, 1302, 1301, 1224, 1221, 1218, 1220, 1222, 1223]
     if assist_avatar_list:
         for avatar in assist_avatar_list:
             if avatar.get('avatarId') and avatar.get('avatarId') in avatarIdList:

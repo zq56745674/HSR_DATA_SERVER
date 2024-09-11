@@ -17,6 +17,9 @@ import os
 # 设置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# ctrl+k ctrl+0 折叠所有代码
+# ctrl+k ctrl+j 展开所有代码
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, db_connection):
         super().__init__()
@@ -622,7 +625,7 @@ class ExecuteFileThread(QThread):
 
     def get_table_name(self):
         server_table_map = {
-            'cn': 'sr_user_info', 'b': 'sr_user_info_b',
+            'cn': 'sr_user_info_20240715', 'b': 'sr_user_info_b',
             'ya': 'sr_user_info_asia', 'ou': 'sr_user_info_europe',
             'mei': 'sr_user_info_america', 'gat': 'sr_user_info_cht'
         }
