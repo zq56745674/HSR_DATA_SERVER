@@ -59,24 +59,28 @@ def log_request_failure(db, uid, status_code, table_name, error_desc=None):
 
 # 根据UID获取用户信息
 def get_user_info_by_uid(db, uid, table_name):
-    qry_sql = "select `UID`, `signature`, `platform`, `nickname`, `level`, `friend_count`, `max_rogue_challenge_score`, `achievement_count`, `equipment_count`, `avatar_count`, `head_icon`, `relic_count`, `book_count`, `music_count` from " + table_name + " where uid = %s"
+    qry_sql = "select `UID`, `signature`, `platform`, `nickname`, `level`, `friend_count`, `max_rogue_challenge_score`, `achievement_count`, `equipment_count`, `avatar_count`, `head_icon`, `relic_count`, `book_count`, `music_count`, goldNum from " + table_name + " where uid = %s"
     with get_cursor(db) as cursor:
         cursor.execute(qry_sql, (uid,))
         return cursor.fetchone()
 
 # 更新用户信息
-def update_user_info(db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, before_info, after_info):
-    update_sql = "UPDATE " + table_name + " SET UID=%s, signature=%s, platform=%s, nickname=%s, `level`=%s, friend_count=%s, max_rogue_challenge_score=%s, achievement_count=%s, equipment_count=%s, avatar_count=%s, head_icon=%s, remark=%s, relic_count=%s, book_count=%s, music_count=%s, LAST_UPDATE_TIME=now() WHERE UID=%s"
-    # 插入用户信息更新记录
+def update_user_info(db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, goldNum):
+    update_sql = "UPDATE " + table_name + " SET UID=%s, signature=%s, platform=%s, nickname=%s, `level`=%s, friend_count=%s, max_rogue_challenge_score=%s, achievement_count=%s, equipment_count=%s, avatar_count=%s, head_icon=%s, remark=%s, relic_count=%s, book_count=%s, music_count=%s, goldNum=%s, LAST_UPDATE_TIME=now() WHERE UID=%s"
+    with get_cursor(db) as cursor:
+        cursor.execute(update_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, goldNum, uid))
+        db.commit()
+
+# 插入用户信息更新记录
+def insert_user_info_upd_record(db, uid, before_info, after_info):
     insert_record_sql = "INSERT INTO `sr_user_info_upd_record` (`UID`, `UPDATE_DATE`, `before_info`, `after_info`, `CREATE_TIME`) VALUES (%s, now(), %s, %s, now())"
     with get_cursor(db) as cursor:
-        cursor.execute(update_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, uid))
         cursor.execute(insert_record_sql, (uid, before_info, after_info))
         db.commit()
 
 # 插入用户信息
-def insert_user_info(db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount):
-    insert_sql = "INSERT INTO " + table_name + " (UID, signature, platform, nickname, `level`, friend_count, max_rogue_challenge_score, achievement_count, equipment_count, avatar_count, head_icon, CREATE_TIME, remark, relic_count, book_count, music_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), %s, %s, %s, %s)" 
+def insert_user_info(db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, goldNum):
+    insert_sql = "INSERT INTO " + table_name + " (UID, signature, platform, nickname, `level`, friend_count, max_rogue_challenge_score, achievement_count, equipment_count, avatar_count, head_icon, CREATE_TIME, remark, relic_count, book_count, music_count, goldNum) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), %s, %s, %s, %s, %s)" 
     with get_cursor(db) as cursor:
-        cursor.execute(insert_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount))
+        cursor.execute(insert_sql, (uid, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, goldNum))
         db.commit()

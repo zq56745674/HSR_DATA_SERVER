@@ -26,7 +26,7 @@ def print_dict_differences(dict1, dict2):
 
 # 生成备注
 def generate_remark(assist_avatar_list, avatar_detail_list):
-    remark = ""
+    remark = ''
     # 2.X版本新增的角色
     # 1220 飞霄 1222 灵砂 1223 貊泽
     avatarIdList = [8005, 8006, 1315, 1314, 1312, 1310, 1309, 1308, 1307, 1306, 1305, 1304, 1303, 1302, 1301, 1224, 1221, 1218, 1220, 1222, 1223]
@@ -38,7 +38,34 @@ def generate_remark(assist_avatar_list, avatar_detail_list):
         for avatar in avatar_detail_list:
             if avatar.get('avatarId') and str(avatar.get('avatarId')) not in remark and avatar.get('avatarId') in avatarIdList:
                 remark += f"{avatar.get('avatarId')}|{avatar.get('rank') or 0}|{avatar.get('equipment').get('tid') if avatar.get('equipment') else ''}#"
-    return remark
+    
+    goldNum = ''
+    avatarIdList = [1005, 1006, 1102, 1112, 1203, 1204, 1205, 1208, 1212, 1213, 1217, 1218, 1221, 1302, 1303, 1304, 1305, 1306, 1307, 1308, 1309, 1310, 1314, 1315, 1220, 1222]
+    commonAvatarList = [1003, 1004, 1101, 1104, 1107, 1209, 1211]
+    avatarRankSum = 0
+    commonAvatarRankSum = 0
+    if assist_avatar_list is not None:
+        for avatar in assist_avatar_list:
+            if avatar.get('avatarId') is not None and avatar.get('avatarId') in avatarIdList:
+                # print(f"assistAvatarList avatarId: {avatar.get('avatarId')}")
+                avatarRankSum += 1 if avatar.get('rank') is None else avatar.get('rank') + 1
+                # activity_user = True
+            if avatar.get('avatarId') is not None and avatar.get('avatarId') in commonAvatarList:
+                # print(f"assistAvatarList avatarId: {avatar.get('avatarId')}")
+                commonAvatarRankSum += 1 if avatar.get('rank') is None else avatar.get('rank') + 1
+
+    if avatar_detail_list is not None:
+        for avatar in avatar_detail_list:
+            if avatar.get('avatarId') is not None and avatar.get('avatarId') in avatarIdList:
+                # print(f"assistAvatarList avatarId: {avatar.get('avatarId')}")
+                avatarRankSum += 1 if avatar.get('rank') is None else avatar.get('rank') + 1
+                # activity_user = True
+            if avatar.get('avatarId') is not None and avatar.get('avatarId') in commonAvatarList:
+                # print(f"assistAvatarList avatarId: {avatar.get('avatarId')}")
+                commonAvatarRankSum += 1 if avatar.get('rank') is None else avatar.get('rank') + 1
+    goldNum = f"{avatarRankSum}|{commonAvatarRankSum}"
+
+    return remark, goldNum
 
 def create_dict_from_db(exist):
     return {

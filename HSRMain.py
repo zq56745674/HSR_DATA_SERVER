@@ -458,16 +458,19 @@ class ExecuteFileThread(QThread):
         musicCount = record_info.get("musicCount")
         relicCount = record_info.get("relicCount")
         headIcon = detail_info.get("headIcon")
-        remark = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
+        remark, goldNum = hsr_data_util.generate_remark(assist_avatar_list, avatar_detail_list)
         exist = hsr_mapper.get_user_info_by_uid(self.db, uid, table_name)
         if exist:
             dict1 = hsr_data_util.create_dict_from_db(exist)
             dict2 = hsr_data_util.create_dict_from_response(platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, relicCount, bookCount, musicCount)
             result = hsr_data_util.print_dict_differences(dict1, dict2)
             if result:
-                hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, str(result[0]), str(result[1]))
+                hsr_mapper.insert_user_info_upd_record(self.db, uid, str(result[0]), str(result[1]))
+            else:
+                self.info_view.emit(f"uid: {uid} 信息相同", 'infoBrowser')
+            hsr_mapper.update_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, goldNum)
         else:
-            hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount)
+            hsr_mapper.insert_user_info(self.db, uid, table_name, signature, platform, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, remark, relicCount, bookCount, musicCount, goldNum)
 
     def handle_not_found_response(self, response, uid, table_name, not_found_count):
         not_found_count += 1
@@ -624,6 +627,7 @@ class ExecuteFileThread(QThread):
         return ""
 
     def get_table_name(self):
+        # sr_user_info_20240715
         server_table_map = {
             'cn': 'sr_user_info_20240715', 'b': 'sr_user_info_b',
             'ya': 'sr_user_info_asia', 'ou': 'sr_user_info_europe',
