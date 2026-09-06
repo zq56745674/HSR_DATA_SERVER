@@ -1,0 +1,32 @@
+# Core dependencies
+PySide6>=6.10.1
+pymysql>=1.1.2
+requests>=2.31.0
+pandas>=2.3.3
+openpyxl>=3.1.2
+matplotlib>=3.8.0
+python-dotenv>=1.0.0
+
+# AI and Translation
+qianfan>=0.4.12.3
+
+# Image processing
+Pillow>=10.0.0
+opencv-python>=4.8.0
+
+# Data processing
+numpy>=2.3.3
+chardet>=5.2.0
+
+# Automation and OCR
+pyautogui>=0.9.54
+pytesseract>=0.3.10
+
+# Web scraping
+fake-useragent>=1.4.0
+PyExecJS>=1.5.1
+
+# Machine learning (optional)
+scikit-learn>=1.7.2
+scipy>=1.11.0
+jieba>=0.42.1

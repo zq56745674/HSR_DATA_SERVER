@@ -5,11 +5,21 @@ import logging
 import os
 import re
 from datetime import datetime
+from typing import Dict, List, Optional, Any
+import sys
+from pathlib import Path
 
-def print_dict_differences(dict1, dict2):
-    result = []
-    before_info = {}
-    after_info = {}
+logger = logging.getLogger(__name__)
+
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
+def print_dict_differences(dict1: Dict, dict2: Dict) -> List[Dict]:
+    """Compare two dictionaries and return differences."""
+    result: List[Dict] = []
+    before_info: Dict[str, Any] = {}
+    after_info: Dict[str, Any] = {}
     for key in dict1:
         v1 = dict1[key]
         v2 = dict2[key]
@@ -20,10 +30,12 @@ def print_dict_differences(dict1, dict2):
         result.append(before_info)
         result.append(after_info)
     else:
-        print('两个字典相同')
+        logger.info('两个字典相同')
     return result
 
-def read_file(file):
+
+def read_file(file: str) -> pd.DataFrame:
+    """Read Excel or CSV file into DataFrame."""
     try:
         if file.endswith('.xlsx') or file.endswith('.xls'):
             return pd.read_excel(file, engine='openpyxl')
@@ -38,67 +50,99 @@ def read_file(file):
     except BadZipFile:
         raise BadZipFile("文件格式不正确")
 
-def process_data(df):
-    # 初始化列表和辅助字典
-    result_list = []
-    for _, row in df.iterrows():
-        if pd.isna(row[0]):
-            break
-        # 初始化字典
-        data_dict = {}
-        # row[0] 不为 NaN 时，转为 int
-        if not pd.isna(row[0]):
-            data_dict['uid'] = int(row[0])
-        data_dict['last_login'] = row[1]
-        if not pd.isna(row[3]):
-            data_dict['level'] = int(row[3])
+
+def process_data(df: pd.DataFrame) -> List[Dict]:
+    """Process DataFrame into list of user data dictionaries."""
+    col1 = df.iloc[:, 1]
+    nan_mask = col1.isna()
+    if nan_mask.any():
+        df = df.iloc[:nan_mask.to_numpy().argmax()]
+
+    uids = df.iloc[:, 1].astype(int).tolist()
+    last_logins = df.iloc[:, 2].tolist()
+    levels = df.iloc[:, 3].tolist()
+
+    result_list: List[Dict] = []
+    for uid, last_login, level in zip(uids, last_logins, levels):
+        data_dict: Dict[str, Any] = {'uid': int(uid), 'last_login': last_login}
+        if not pd.isna(level):
+            data_dict['level'] = int(level)
         result_list.append(data_dict)
     return result_list
 
-def get_database_connection(dbhost, dbuser, dbpass, dbname):
-    try:
-        if not dbpass:
-            db = pymysql.connect(host=dbhost, user=dbuser, database=dbname)
-        else:
-            db = pymysql.connect(host=dbhost, user=dbuser, password=dbpass, database=dbname)
-        logging.info("数据库连接成功")
-        return db
-    except pymysql.Error as e:
-        logging.error("数据库连接失败：" + str(e))
-        return None
 
-def execute_zzz_file(file, formatted_date):
+def execute_zzz_file(file: str, formatted_date: str) -> None:
+    """Process ZZZ data file and insert/update database records.
+    
+    Args:
+        file: Path to data file
+        formatted_date: Date in YYYY-MM-DD format
+    """
+    from config import config
+    
     df = read_file(file)
-    list = process_data(df)
+    data_list = process_data(df)
 
     qry_sql = "SELECT * FROM `zzz_user_info` WHERE uid = %s"
-    insert_record_sql = "INSERT INTO `sr_user_info_upd_record` (`UID`, `UPDATE_DATE`, `before_info`, `after_info`, `CREATE_TIME`) VALUES (%s, now(), %s, %s, now())"
-    # 插入数据库
-    db = get_database_connection('rm-uf6n58p87aw72940u3o.mysql.rds.aliyuncs.com', 'zzm', 'Zq56745674', 'my_data')
-    cursor = db.cursor()
-    for item in list:
-        print(item)
-        insert_sql = f"INSERT INTO `zzz_user_info` (`UID`, `level`, `last_login_date`, `DATA_DATE`, `CREATE_TIME`) VALUES ({item['uid']}, {item['level']}, '{item['last_login']}', '{formatted_date}', now());"
-        update_sql = f"UPDATE `zzz_user_info` SET `level` = {item['level']}, `last_login_date` = '{item['last_login']}', `DATA_DATE` = '{formatted_date}', `UPDATE_TIME` = now() WHERE `UID` = {item['uid']};"
+    insert_record_sql = (
+        "INSERT INTO `zzz_user_info_upd_record` "
+        "(`UID`, `UPDATE_DATE`, `before_info`, `after_info`, `CREATE_TIME`) "
+        "VALUES (%s, NOW(), %s, %s, NOW())"
+    )
     
-        cursor.execute(qry_sql, ({item['uid']}))
-        exist = cursor.fetchone()
-        if exist:
-            dict1 = {'level': exist[5], 'last_login_date': exist[6]}
-            dict2 = {'level': item['level'], 'last_login_date': item['last_login']}
-            result = print_dict_differences(dict1, dict2)
-            if result:
-                cursor.execute(update_sql)
-                cursor.execute(insert_record_sql, ({item['uid']}, str(result[0]), str(result[1])))
-        else:
-            cursor.execute(insert_sql)
-    db.commit()
-    db.close()
+    db = pymysql.connect(
+        host=config.DB_HOST,
+        user=config.DB_USER,
+        password=config.DB_PASSWORD,
+        database=config.DB_NAME
+    )
     
+    try:
+        cursor = db.cursor()
+        for item in data_list:
+            logger.info(f"Processing item: {item}")
+            uid = item['uid']
+            
+            with cursor:
+                cursor.execute(qry_sql, (uid,))
+                exist = cursor.fetchone()
+                
+                if exist:
+                    dict1 = {'level': exist[5], 'last_login_date': exist[6]}
+                    dict2 = {'level': item['level'], 'last_login_date': item['last_login']}
+                    result = print_dict_differences(dict1, dict2)
+                    
+                    if result:
+                        update_sql = (
+                            "UPDATE `zzz_user_info` SET `level` = %s, `last_login_date` = %s, "
+                            "`DATA_DATE` = %s, `LAST_UPDATE_TIME` = NOW() WHERE `UID` = %s"
+                        )
+                        cursor.execute(update_sql, (
+                            item['level'], item['last_login'], formatted_date, uid
+                        ))
+                        cursor.execute(insert_record_sql, (uid, str(result[0]), str(result[1])))
+                else:
+                    insert_sql = (
+                        "INSERT INTO `zzz_user_info` "
+                        "(`UID`, `level`, `last_login_date`, `DATA_DATE`, `CREATE_TIME`) "
+                        "VALUES (%s, %s, %s, %s, NOW())"
+                    )
+                    cursor.execute(insert_sql, (
+                        item['uid'], item['level'], item['last_login'], formatted_date
+                    ))
+                db.commit()
+    except pymysql.Error as e:
+        logger.error(f"Database error: {e}")
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
-    file = 'D:/ZZZPIC/存档/7月20.xlsx'
+    file = 'E:/ZZZ/7月11.xlsx'
     filename = os.path.basename(file)
-    
+
     pattern = re.compile(r'(\d+)月(\d+)')
     match = pattern.search(filename)
     if match:
@@ -109,4 +153,4 @@ if __name__ == "__main__":
         formatted_date = date.strftime('%Y-%m-%d')
         execute_zzz_file(file, formatted_date)
     else:
-        print("未找到日期")
+        logger.warning("未找到日期")

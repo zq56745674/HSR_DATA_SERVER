@@ -85,9 +85,16 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addWidget(self.maxUidLabel)
 
+        self.refreshMaxUidButton = QPushButton(self.tabWidgetPage1)
+        self.refreshMaxUidButton.setObjectName(u"refreshMaxUidButton")
+        self.refreshMaxUidButton.setMinimumSize(QSize(0, 30))
+
+        self.horizontalLayout_8.addWidget(self.refreshMaxUidButton)
+
         self.horizontalLayout_8.setStretch(0, 3)
         self.horizontalLayout_8.setStretch(1, 1)
         self.horizontalLayout_8.setStretch(2, 2)
+        self.horizontalLayout_8.setStretch(3, 1)
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_8)
 
@@ -643,6 +650,7 @@ class Ui_MainWindow(object):
         self.fileButton.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4f20\u6587\u4ef6", None))
         self.fileLabel.setText(QCoreApplication.translate("MainWindow", u"\u672a\u9009\u62e9\u6587\u4ef6", None))
         self.maxUidLabel.setText(QCoreApplication.translate("MainWindow", u"\u6700\u5927uid\uff1a", None))
+        self.refreshMaxUidButton.setText(QCoreApplication.translate("MainWindow", u"\u5237\u65b0", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u5d29\u574f\uff1a\u661f\u7a79\u94c1\u9053 - UID", None))
         self.radioButton_cn.setText(QCoreApplication.translate("MainWindow", u"\u56fd\u670d", None))
         self.label_cn.setText("")

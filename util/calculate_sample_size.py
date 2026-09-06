@@ -50,11 +50,11 @@ def calculate_confidence_level(n, E, p=0.5):
     return confidence_level
 
 # 总体规模
-N = 106000000
+N = 37510000
 # 样本量
-n = 1800
+n = 17000
 # 样本比例
-p = 0.035
+p = 0.05
 
 # 计算误差范围
 E = calculate_margin_of_error(n, N, p)

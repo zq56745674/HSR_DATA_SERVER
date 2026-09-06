@@ -3,6 +3,21 @@ from fake_useragent import UserAgent
 import time
 import random
 import pymysql
+import sys
+import logging
+from pathlib import Path
+
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import config
+
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+)
+
 
 # 全局变量
 not_found_count = 0
@@ -23,20 +38,19 @@ def print_dict_differences(dict1, dict2):
         result.append(before_info)
         result.append(after_info)
     else:
-        print('两个字典相同')
+        logger.info('两个字典相同')
     return result
 
 def get_database_connection():
-    dbhost = 'rm-uf6n58p87aw72940u3o.mysql.rds.aliyuncs.com'
-    dbuser = 'zzm'
-    dbpass = 'Zq56745674'
-    dbname = 'my_data'
     try:
-        db = pymysql.connect(host=dbhost, user=dbuser, password=dbpass, database=dbname)
-        print("数据库连接成功")
+        db = pymysql.connect(
+            host=config.DB_HOST, user=config.DB_USER,
+            password=config.DB_PASSWORD, database=config.DB_NAME
+        )
+        logger.info("数据库连接成功")
         return db
     except pymysql.Error as e:
-        print("数据库连接失败：" + str(e))
+        logger.error(f"数据库连接失败：{e}")
         return None
 
 def log_request_failure(cursor, uid, status_code, error_desc=None):
@@ -49,9 +63,9 @@ def log_request_failure(cursor, uid, status_code, error_desc=None):
             insert_sql = "INSERT INTO gi_user_info (UID, CREATE_TIME, remark) VALUES (%s, now(), %s)"
             cursor.execute(insert_sql, (uid, status_code))
     except pymysql.MySQLError as e:
-        print(f"数据库操作失败：{e}")
+        logger.error(f"数据库操作失败：{e}")
     except Exception as e:
-        print(f"发生未知错误：{e}")
+        logger.error(f"发生未知错误：{e}")
 
 def fetch_data_from_api(url, headers, uid, db, cursor):
     global not_found_count
@@ -61,19 +75,19 @@ def fetch_data_from_api(url, headers, uid, db, cursor):
             return response.json()
         elif response.status_code == 404:
             not_found_count += 1
-            print(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
+            logger.warning(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
             log_request_failure(cursor, uid, response.status_code)
             db.commit()
             return None
         elif response.status_code == 429:
-            print(f"请求失败，状态码：{response.status_code}")
+            logger.warning(f"请求失败，状态码：{response.status_code}")
             time.sleep(10)
             return None
         else:
-            print(f"请求失败，状态码：{response.status_code}")
+            logger.warning(f"请求失败，状态码：{response.status_code}")
             return None
     except requests.RequestException as e:
-        print(f"请求异常：{e}")
+        logger.error(f"请求异常：{e}")
         # log_request_failure(cursor, uid, 'RequestException', str(e))
         # db.commit()
         return None
@@ -111,7 +125,7 @@ def process_user_data(uid, data):
             fetterCount = data[data[1].get("fetterCount")]
         if data[1].get("towerStarIndex") != None:
             towerStarIndex = data[data[1].get("towerStarIndex")]
-    print(f"uid: {uid} nickname: {nickname} level: {level} worldLevel: {worldLevel} nameCardId: {nameCardId} finishAchievementNum: {finishAchievementNum} towerFloorIndex: {towerFloorIndex} theaterActIndex: {theaterActIndex} theaterModeIndex: {theaterModeIndex} fetterCount: {fetterCount} towerStarIndex: {towerStarIndex}")
+    logger.info(f"uid: {uid} nickname: {nickname} level: {level} worldLevel: {worldLevel} nameCardId: {nameCardId} finishAchievementNum: {finishAchievementNum} towerFloorIndex: {towerFloorIndex} theaterActIndex: {theaterActIndex} theaterModeIndex: {theaterModeIndex} fetterCount: {fetterCount} towerStarIndex: {towerStarIndex}")
     return uid, nickname, level, worldLevel, nameCardId, finishAchievementNum, towerFloorIndex, theaterActIndex, theaterModeIndex, fetterCount, towerStarIndex
 
 def main():
@@ -149,7 +163,7 @@ def main():
         uid = str(randomNum)
 
         url = f"https://enka.network/u/{uid}/__data.json?x-sveltekit-invalidated=01"
-        print(f"i {i} url: {url}")
+        logger.info(f"i {i} url: {url}")
         user_agents = UserAgent().chrome
         headers = {"User-Agent": user_agents}
         data = fetch_data_from_api(url, headers, uid, db, cursor)
@@ -190,7 +204,7 @@ def main():
 
         # 随机延迟
         random_delay = random.uniform(1.5, 1.8)
-        print(f"随机延迟 {random_delay} 秒...")
+        logger.debug(f"随机延迟 {random_delay} 秒...")
         time.sleep(random_delay)
     
     cursor.close()

@@ -1,28 +1,29 @@
 import requests
 import random
 from hashlib import md5
-import configparser
 import logging
+import sys
+from pathlib import Path
 
-# 设置日志
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import config
+
+logger = logging.getLogger(__name__)
+
 
 class BaiDuFanyi:
+    """Baidu Translation API client."""
+    
     def __init__(self):
-        self._load_config()
+        self.appid = config.BAIDU_APP_ID
+        self.secretKey = config.BAIDU_SECRET
         self.url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
         self.salt = random.randint(32768, 65536)
         self.header = {'Content-Type': 'application/x-www-form-urlencoded'}
-
-    def _load_config(self):
-        config = configparser.ConfigParser()
-        try:
-            config.read('config/config.ini')
-            self.appid = config['baidufanyi']['BAIDU_APP_ID']
-            self.secretKey = config['baidufanyi']['BAIDU_SECRET']
-        except Exception as e:
-            logging.error(f"Error reading config file: {e}")
-            raise
+        
+        if not self.appid or not self.secretKey:
+            logger.warning("Baidu translation credentials not configured")
     
     def BdTrans(self, text, fromLang='auto', toLang='zh'):
         sign = self.appid + text + str(self.salt) + self.secretKey

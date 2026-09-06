@@ -3,6 +3,21 @@ import json
 import time
 import random
 import pymysql
+import sys
+import logging
+from pathlib import Path
+
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import config
+
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+)
+
 
 # 全局变量
 not_found_count = 0
@@ -23,20 +38,19 @@ def print_dict_differences(dict1, dict2):
         result.append(before_info)
         result.append(after_info)
     else:
-        print('两个字典相同')
+        logger.info('两个字典相同')
     return result
 
 def get_database_connection():
-    dbhost = 'rm-uf6n58p87aw72940u3o.mysql.rds.aliyuncs.com'
-    dbuser = 'zzm'
-    dbpass = 'Zq56745674'
-    dbname = 'my_data'
     try:
-        db = pymysql.connect(host=dbhost, user=dbuser, password=dbpass, database=dbname)
-        print("数据库连接成功")
+        db = pymysql.connect(
+            host=config.DB_HOST, user=config.DB_USER,
+            password=config.DB_PASSWORD, database=config.DB_NAME
+        )
+        logger.info("数据库连接成功")
         return db
     except pymysql.Error as e:
-        print("数据库连接失败：" + str(e))
+        logger.error(f"数据库连接失败：{e}")
         return None
 
 def log_request_failure(cursor, uid, status_code, error_desc=None):
@@ -48,9 +62,9 @@ def log_request_failure(cursor, uid, status_code, error_desc=None):
             insert_sql = "INSERT INTO sr_user_info (UID, CREATE_TIME, remark) VALUES (%s, now(), %s)"
             cursor.execute(insert_sql, (uid, status_code))
     except pymysql.MySQLError as e:
-        print(f"数据库操作失败：{e}")
+        logger.error(f"数据库操作失败：{e}")
     except Exception as e:
-        print(f"发生未知错误：{e}")
+        logger.error(f"发生未知错误：{e}")
 
 def fetch_data_from_api(url, headers, uid, db, cursor):
     global not_found_count
@@ -60,15 +74,15 @@ def fetch_data_from_api(url, headers, uid, db, cursor):
             return response.json()
         elif response.status_code == 404:
             not_found_count += 1
-            print(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
+            logger.warning(f"请求失败，状态码：{response.status_code}，404计数：{not_found_count}")
             # log_request_failure(cursor, uid, response.status_code)
             # db.commit()
             return None
         else:
-            print(f"请求失败，状态码：{response.status_code}")
+            logger.warning(f"请求失败，状态码：{response.status_code}")
             return None
     except requests.RequestException as e:
-        print(f"请求异常：{e}")
+        logger.error(f"请求异常：{e}")
         log_request_failure(cursor, uid, 'RequestException', str(e))
         db.commit()
         return None
@@ -152,7 +166,7 @@ def main():
         # 港澳台
         # randomNum = random.randint(1, 1098000) + 900000001
         if counter >= loop_limit:
-            print(f"已达到循环次数限制，休息 {rest_time} 秒....................................")
+            logger.info(f"已达到循环次数限制，休息 {rest_time} 秒")
             time.sleep(rest_time)
             counter = 0
 
@@ -160,7 +174,7 @@ def main():
         i += 1
         uid = str(randomNum)
         url = endpoint + uid
-        print(f"i {i} url: {url}")
+        logger.info(f"i {i} url: {url}")
 
         headers = {"User-Agent": selected_user_agent}
         data = fetch_data_from_api(url, headers, uid, db, cursor)
@@ -174,9 +188,9 @@ def main():
 
         user_data = process_user_data(detail_info, record_info, assist_avatar_list, avatar_detail_list)
         uid, platform, signature, nickname, level, friendCount, maxRogueChallengeScore, achievementCount, equipmentCount, avatarCount, headIcon, activity_user, remark, relicCount, bookCount, musicCount = user_data
-        # print(f"uid: {uid} activity_user: {activity_user}")
+        # logger.debug(f"uid: {uid} activity_user: {activity_user}")
         if activity_user:
-            print(f"uid: {uid} platform: {platform} signature: {signature} nickname: {nickname} level: {level} friendCount: {friendCount} maxRogueChallengeScore: {maxRogueChallengeScore} achievementCount: {achievementCount} equipmentCount: {equipmentCount} avatarCount: {avatarCount} headIcon: {headIcon} relicCount: {relicCount} bookCount: {bookCount} musicCount: {musicCount} remark: {remark}")
+            logger.info(f"uid: {uid} platform: {platform} signature: {signature} nickname: {nickname} level: {level} friendCount: {friendCount} maxRogueChallengeScore: {maxRogueChallengeScore} achievementCount: {achievementCount} equipmentCount: {equipmentCount} avatarCount: {avatarCount} headIcon: {headIcon} relicCount: {relicCount} bookCount: {bookCount} musicCount: {musicCount} remark: {remark}")
             qry_sql = "select `UID`, `signature`, `platform`, `nickname`, `level`, `friend_count`, `max_rogue_challenge_score`, `achievement_count`, `equipment_count`, `avatar_count`, `head_icon`, `relic_count`, `book_count`, `music_count` from sr_user_info where uid = %s"
             cursor.execute(qry_sql, (uid,))
             exist = cursor.fetchone()

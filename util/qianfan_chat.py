@@ -1,24 +1,28 @@
 import os
 import qianfan
-import configparser
 import logging
+import sys
+from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Add parent directory to path for config import
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import config
+
+logger = logging.getLogger(__name__)
+
 
 class QianFanChat:
+    """Baidu Qianfan AI chat client."""
+    
     def __init__(self):
-        self._load_config()
+        # Set environment variables for qianfan SDK
+        os.environ["QIANFAN_ACCESS_KEY"] = config.QIANFAN_ACCESS_KEY
+        os.environ["QIANFAN_SECRET_KEY"] = config.QIANFAN_SECRET_KEY
+        
+        if not config.QIANFAN_ACCESS_KEY or not config.QIANFAN_SECRET_KEY:
+            logger.warning("Qianfan credentials not configured")
+        
         self.chat_comp = qianfan.ChatCompletion()
-
-    def _load_config(self):
-        config = configparser.ConfigParser()
-        try:
-            config.read('config/config.ini')
-            os.environ["QIANFAN_ACCESS_KEY"] = config['qianfan']['QIANFAN_ACCESS_KEY']
-            os.environ["QIANFAN_SECRET_KEY"] = config['qianfan']['QIANFAN_SECRET_KEY']
-        except Exception as e:
-            logging.error(f"Error reading config file: {e}")
-            raise
 
     def chat(self, message):
         try:

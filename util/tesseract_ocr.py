@@ -1,6 +1,6 @@
 from PIL import Image
-import pytesseract
-import cv2
+# import pytesseract
+# import cv2
 import os
 import numpy as np
 import time
@@ -16,7 +16,7 @@ for root, dirs, files in os.walk(file):
         # 找到B等级开头的文件
         if file.startswith('LEVELINFO'):
             print(file)
-            image = cv2.imread(os.path.join(root, file))
+            # image = cv2.imread(os.path.join(root, file))
             # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
             # if preprocess == "thresh":
@@ -41,8 +41,8 @@ for root, dirs, files in os.walk(file):
             # kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
             # gray = cv2.filter2D(gray, -1, kernel)
 
-            filename = "{}.png".format(os.getpid())
-            cv2.imwrite(filename, image)
+            # filename = "{}.png".format(os.getpid())
+            # cv2.imwrite(filename, image)
 
             # **--oem 3**：OCR 引擎模式（OEM，OCR Engine Mode）。
 
@@ -65,19 +65,19 @@ for root, dirs, files in os.walk(file):
             # 10：将图像视为单个文本行中的单个单词。
             # 11：将图像视为单个文本行中的单个单词。
             # custom_config = r'-l chi_sim --oem 3 --psm 3'
-            custom_config = r'-l eng.num --oem 3 --psm 6'
-            text = pytesseract.image_to_string(Image.open(filename), config=custom_config)
-            # print(text.replace('\n', ''))
-            dict = {'Name': file, 'OCR': text.replace('\n', '')}
-            list.append(dict)
+            # custom_config = r'-l eng.num --oem 3 --psm 6'
+            # text = pytesseract.image_to_string(Image.open(filename), config=custom_config)
+            # # print(text.replace('\n', ''))
+            # dict = {'Name': file, 'OCR': text.replace('\n', '')}
+            # list.append(dict)
 
-            os.remove(filename)
+            # os.remove(filename)
 
-df = pd.DataFrame(list)
-# 当前时间戳
-timestamp = int(time.time())
+# df = pd.DataFrame(list)
+# # 当前时间戳
+# timestamp = int(time.time())
 
-df.to_excel(f'D:/ZZZPIC/{timestamp}.xlsx', index=False) 
+# df.to_excel(f'D:/ZZZPIC/{timestamp}.xlsx', index=False) 
 
 # 展示处理前、后的图片
 # cv2.imshow("Image", image)
