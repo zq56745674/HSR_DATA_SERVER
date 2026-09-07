@@ -522,7 +522,7 @@ class ExecuteFileThread(QThread):
         )
         self._progress_throttler = SignalThrottler(config.PROGRESS_EMIT_INTERVAL)
         self._log_throttler = SignalThrottler(config.LOG_EMIT_INTERVAL)
-        self._completed = 0
+        self._completed = current_index
         self._completed_lock = threading.Lock()
         self._dbs = set()
         self._dbs_lock = threading.Lock()
@@ -725,11 +725,12 @@ class ExecuteFileThread(QThread):
         max_uid = self.get_max_uid() if self.maxEditUid == 0 else self.maxEditUid
         min_uid = self.get_min_uid()
 
+        total = maxLen - 1
         items = [
             (i, str(random.randint(self.minEditUid, max_uid) + min_uid))
-            for i in range(1, maxLen)
+            for i in range(self.current_index + 1, maxLen)
         ]
-        self._run_concurrently(items, len(items))
+        self._run_concurrently(items, total)
 
     def execute_file(self) -> None:
         """Execute data crawling from a file containing UIDs."""
@@ -757,12 +758,13 @@ class ExecuteFileThread(QThread):
         self.serverName = self.determine_server_name(uid)
 
         uids = df['uid'].astype(str).tolist()
+        total = len(uids)
         items = [
             (idx, uid)
             for idx, uid in zip(df.index, uids)
             if idx >= self.current_index
         ]
-        self._run_concurrently(items, len(items))
+        self._run_concurrently(items, total)
 
     def _process_uid(self, index, uid, total):
         """Process a single UID within a worker thread."""
@@ -808,7 +810,7 @@ class ExecuteFileThread(QThread):
         self._flush_and_close()
 
         if self.interrupted:
-            self.handle_interruption(self.current_index + self._completed)
+            self.handle_interruption(self._completed)
         else:
             self.finished_info.emit()
 
@@ -843,6 +845,8 @@ class ExecuteFileThread(QThread):
 
     def set_current_index(self, current_index: int) -> None:
         self.current_index = current_index
+        with self._completed_lock:
+            self._completed = current_index
 
 
 class ZZZThread(QThread):
