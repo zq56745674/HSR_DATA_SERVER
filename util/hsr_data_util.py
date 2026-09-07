@@ -16,35 +16,72 @@ GOLD_AVATAR_IDS = [1005, 1006, 1102, 1112, 1203, 1204, 1205, 1208, 1212, 1213,
 # 普通角色ID
 COMMON_AVATAR_IDS = [1003, 1004, 1101, 1104, 1107, 1209, 1211]
 
+def _are_equal(v1: Any, v2: Any) -> bool:
+    """
+    判断两个值是否相等，特殊规则：
+      - None 和 '' 视为相等
+      - 数字和数字字符串（如 123 和 "123"）视为相等
+    """
+    # 1. 处理 None 和空字符串
+    if (v1 is None or v1 == '') and (v2 is None or v2 == ''):
+        return True
+
+    # 2. 尝试数字转换（int / float）
+    def to_number(val):
+        if isinstance(val, (int, float)):
+            return val
+        if isinstance(val, str):
+            val = val.strip()
+            # 先尝试 int，失败则尝试 float
+            try:
+                return int(val)
+            except ValueError:
+                return float(val)
+        raise ValueError("not a number")
+
+    try:
+        num1 = to_number(v1)
+        num2 = to_number(v2)
+        return num1 == num2
+    except (ValueError, TypeError):
+        # 无法转换为数字，回退到字符串比较
+        return str(v1) == str(v2)
 
 def print_dict_differences(dict1: Dict, dict2: Dict) -> Optional[List[Dict]]:
-    """Compare two dictionaries and return differences.
-    
+    """
+    比较两个字典，返回差异列表。
+
     Args:
-        dict1: First dictionary (from DB)
-        dict2: Second dictionary (from API response)
-        
+        dict1: 第一个字典（如数据库数据）
+        dict2: 第二个字典（如 API 响应）
+
     Returns:
-        [before_info, after_info] if differences found, else None
+        若存在差异，返回 [before_info, after_info]；否则返回 None。
     """
     before_info: Dict[str, Any] = {}
     after_info: Dict[str, Any] = {}
-    
-    for key in dict1:
-        v1 = dict1[key]
-        v2 = dict2[key]
+
+    # 合并两个字典的所有键，避免 KeyError
+    all_keys = set(dict1.keys()) | set(dict2.keys())
+
+    for key in all_keys:
+        v1 = dict1.get(key)   # 若无此键，取 None
+        v2 = dict2.get(key)
+
+        # 特殊处理 platform 字段（原逻辑保留）
         if key == 'platform' and v2 is not None:
             v2 = str(v2)
-        if str(v1) != str(v2):
-            before_info[key] = v1
+
+        # 使用增强的比较函数
+        if not _are_equal(v1, v2):
+            before_info[key] = v1   # 保留原始值
             after_info[key] = v2
-    
+
     if before_info:
         return [before_info, after_info]
-    
+
     logger.info('两个字典相同')
     return None
-
 
 def _get_equipment_id(avatar: Dict) -> str:
     """Get equipment ID from avatar dict, or empty string."""
